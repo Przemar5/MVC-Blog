@@ -10,6 +10,6 @@ class RegisterController extends Controller
 	
 	public function index_action()
 	{
-		$this->view()->render('register/index');
+		$this->view->render('register/index');
 	}
 }

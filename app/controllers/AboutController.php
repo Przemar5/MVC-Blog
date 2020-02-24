@@ -10,6 +10,6 @@ class AboutController extends Controller
 	
 	public function index_action()
 	{
-		$this->view()->render('about/index');
+		$this->view->render('about/index');
 	}
 }

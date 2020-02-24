@@ -10,7 +10,8 @@ class LoginController extends Controller
 	
 	public function index_action()
 	{
-		$this->view()->render('login/index');
+        $this->view->errors = Session::popMultiple(['username', 'password', 'not_found']);
+		$this->view->render('login/index');
 	}
 	
 	public function verify_action()
@@ -19,14 +20,27 @@ class LoginController extends Controller
 		
 		if ($input->isPost())
 		{
-			$validation = new Validator;
-			
-			$validation->check($_POST, [
-				'username' => [
-					'required' => ['msg' => 'Username is required.']
-				],
-				'password' => true
-			]);
+            $this->loadModel('users');
+            $this->usersModel->populate($_POST);
+            d($_POST);die;
+
+            if ($this->usersModel->check())
+            {
+                session_regenerate_id();
+
+                $value = uniqid() . Helper::generateRandomString(16);
+                Session::set(USER_SESSION_NAME, $value);
+
+                $path = URL . 'dashboard';
+                header('Location: ' . $path);
+            }
+            else
+            {
+                Session::setMultiple($this->usersModel->errors);
+
+                $path = URL . 'login';
+                header('Location: ' . $path);
+            }
 		}
 	}
 }

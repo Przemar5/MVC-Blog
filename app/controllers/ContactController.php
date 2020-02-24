@@ -10,6 +10,6 @@ class ContactController extends Controller
 	
 	public function index_action()
 	{
-		$this->view()->render('contact/index');
+		$this->view->render('contact/index');
 	}
 }

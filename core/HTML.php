@@ -6,7 +6,6 @@ class HTML
 	public function tag($data)
 	{
 		self::getAttrsString($data);
-		
 	}
 	
 	public static function input($inputData)
@@ -55,6 +54,21 @@ class HTML
 		
 		echo $html;
 	}
+
+	public static function errors($errors)
+    {
+        if (count($errors))
+        {
+            echo '<div class="p-3 mb-3">';
+
+            foreach ($errors as $key => $value)
+            {
+                echo '<div class="text-danger">' . $value . '</div>';
+            }
+
+            echo '</div>';
+        }
+    }
 	
 	private static function stringifyAttrs($data)
 	{

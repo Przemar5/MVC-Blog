@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 define('ROOT', __DIR__);
 
 require_once 'config/config.php';
@@ -10,6 +12,9 @@ require_once 'core/View.php';
 require_once 'core/HTML.php';
 require_once 'core/Input.php';
 require_once 'core/Validator.php';
+require_once 'core/Database.php';
+require_once 'core/Session.php';
+require_once 'core/Helper.php';
 
 require_once 'app/controllers/HomeController.php';
 
@@ -26,7 +31,6 @@ $url = (isset($_SERVER['PATH_INFO'])) ? $_SERVER['PATH_INFO'] : '';
 
 
 // Check regex match
-
 if (!empty($url))
 {
 	$url = (!empty($url)) ? explode('/', trim($url, '/')) : $url = '';
@@ -39,17 +43,17 @@ if (!empty($url))
 		require_once $requestedFile;
 		
 		// Create controller
-		$controllerName = $url[0] . 'Controller';
+		$controllerName = array_shift($url) . 'Controller';
 		$controller = new $controllerName;
 		
 		if (!empty($url[1]))
 		{
-			$methodName = $url[1] . '_action';
+			$methodName = array_shift($url) . '_action';
 			
 			if (method_exists($controller, $methodName))
 			{
 				// Call method
-				$controller->{$methodName}();
+                call_user_func_array([$controller, $methodName], $url);
 			}
 		}
 		else 

@@ -5,11 +5,12 @@
 <?php $this->start('body'); ?>
 
 <div class="container my-5">
-	<div class="col-md-8 offset-md-2 card p-3 shadow">
+	<div class="col-md-8 offset-md-2 card px-3 py-4 shadow">
+        <?php HTML::errors($this->errors); ?>
+
 		<h1 class="text-center">Login</h1>
 		
 		<form action="<?= URL; ?>login/verify" method="post" class="card-body">
-
 			<?php HTML::inputBlock(['type' => 'text', 'id' => 'username', 'name' => 'username', 'class' => 'form-control'], 
 								   ['text' => 'Username', 'class' => 'form-group']); ?>
 			<?php HTML::inputBlock(['type' => 'password', 'id' => 'password', 'name' => 'password', 'class' => 'form-control'], 
