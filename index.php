@@ -19,41 +19,56 @@ require_once 'core/Helper.php';
 require_once 'app/controllers/HomeController.php';
 
 
-function d($data)
+function d($data, $line = '', $function = '')
 {
-	echo '<pre>';
-	var_dump($data);
-	echo '</pre>';
+    if (gettype($data) === 'array')
+    {
+        echo '<pre>';
+        var_dump($data);
+        echo '</pre>';
+    }
+    else
+    {
+        echo $data;
+    }
+
+    echo '<br>', $line, '<br>', $function;
 }
+
+function dd($data)
+{
+    d($data);
+    die;
+}
+
 
 //echo $_SERVER['REQUEST_URI'];
 $url = (isset($_SERVER['PATH_INFO'])) ? $_SERVER['PATH_INFO'] : '';
-
-
+//dd($_SESSION);
 // Check regex match
 if (!empty($url))
 {
-	$url = (!empty($url)) ? explode('/', trim($url, '/')) : $url = '';
+	$url = explode('/', trim($url, '/'));
 	$len = count($url);
-	
-	$requestedFile = 'app/controllers/' . $url[0] . 'Controller.php';
+	$controllerPrefix = array_shift($url);
+	$requestedFile = 'app/controllers/' . $controllerPrefix . 'Controller.php';
 	
 	if (is_readable($requestedFile))
 	{
 		require_once $requestedFile;
-		
+
 		// Create controller
-		$controllerName = array_shift($url) . 'Controller';
+		$controllerName = $controllerPrefix . 'Controller';
 		$controller = new $controllerName;
-		
-		if (!empty($url[1]))
+
+		if (!empty($url))
 		{
-			$methodName = array_shift($url) . '_action';
-			
-			if (method_exists($controller, $methodName))
+			$method= array_shift($url) . '_action';
+
+			if (method_exists($controller, $method))
 			{
 				// Call method
-                call_user_func_array([$controller, $methodName], $url);
+                call_user_func_array([$controller, $method], $url);
 			}
 		}
 		else 

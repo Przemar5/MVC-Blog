@@ -34,4 +34,9 @@ class PostsController extends Controller
 
         $this->view->render('posts/show');
     }
+
+    public function create_action()
+    {
+        $this->view->render('posts/create');
+    }
 }

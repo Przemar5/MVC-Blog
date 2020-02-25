@@ -25,6 +25,11 @@ class View
 		require_once($viewPath);
 		require_once($layout);
 	}
+
+	public function include($name)
+    {
+        $this->render('layouts/' . $name);
+    }
 	
 	public function content($type)
 	{

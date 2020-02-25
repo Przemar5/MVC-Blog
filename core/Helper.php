@@ -16,4 +16,11 @@ class Helper
 
         return $randomString;
     }
+
+    public static function getDate($timeString)
+    {
+        $timestamp = strtotime($timeString);
+
+        return date('Y, j M, g:i A');
+    }
 }

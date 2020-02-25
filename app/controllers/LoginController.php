@@ -22,14 +22,13 @@ class LoginController extends Controller
 		{
             $this->loadModel('users');
             $this->usersModel->populate($_POST);
-            d($_POST);die;
 
             if ($this->usersModel->check())
             {
                 session_regenerate_id();
 
-                $value = uniqid() . Helper::generateRandomString(16);
-                Session::set(USER_SESSION_NAME, $value);
+//                $value = uniqid() . Helper::generateRandomString(16);
+                Session::set(USER_SESSION_NAME, $this->usersModel->id);
 
                 $path = URL . 'dashboard';
                 header('Location: ' . $path);

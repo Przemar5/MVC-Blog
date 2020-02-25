@@ -18,11 +18,6 @@ class PostsModel extends Model
         parent::__construct('posts');
     }
 
-    public function truncateText($length = 300)
-    {
-        $this->body = substr($this->body, 0, $length);
-    }
-
     public function findBySlug($slug)
     {
         $validation = new Validator;
@@ -32,5 +27,16 @@ class PostsModel extends Model
             return $this->findFirst(['slug' => $slug]);
         }
         return false;
+    }
+
+    public function truncateText($length = 300)
+    {
+        $this->body = substr($this->body, 0, $length);
+    }
+
+    public function divideParagraphs()
+    {
+//        preg_replace('/(\r*\n)+/g', '</p><p>', $this->body);
+//        $this->
     }
 }

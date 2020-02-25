@@ -8,10 +8,18 @@
                 <a href="<?= URL . 'posts/show/' . $post->slug; ?>">
                     <?= $post->title; ?>
                 </a>
+
+                <small class="h6 d-inline italic ml-2">
+                    <em>
+                        <?= Helper::getDate($post->created_at); ?>
+                    </em>
+                </small>
             </h3>
+
             <p>
                 <?= $post->body; ?>
             </p>
+
             <a href="<?= URL . 'posts/show/' . $post->slug; ?>" class="text-primary pull-right">
                 Read More
             </a>
