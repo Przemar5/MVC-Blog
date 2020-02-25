@@ -1,5 +1,7 @@
 <?php
 
+//namespace Core;
+
 
 class Controller
 {
@@ -12,7 +14,7 @@ class Controller
     {
         $path = ROOT . DS . 'app' . DS . 'models' . DS . $table . 'Model.php';
 
-        if (is_readable($path))
+        if (file_exists($path))
         {
             require_once $path;
 

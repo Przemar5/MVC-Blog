@@ -8,6 +8,8 @@ class PostsController extends Controller
 		parent::__construct();
 
 		$this->loadModel('posts');
+        $this->loadModel('categories');
+        $this->loadModel('tags');
 	}
 	
 	public function index_action()
@@ -37,6 +39,30 @@ class PostsController extends Controller
 
     public function create_action()
     {
+        $this->view->errors = Session::popMultiple(['title', 'label', 'slug', 'category_id', 'body']);
+        $this->view->formAction = URL . 'posts/store';
+        $this->view->categories = $this->categoriesModel->all();
+        $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/create');
+    }
+
+    public function store_action()
+    {
+        if (Input::isPost())
+        {
+            $this->postsModel->populate($_POST);
+
+            if ($this->postsModel->check())
+            {
+                echo 'good';
+            }
+            else
+            {
+                Session::setMultiple($this->postsModel->errors);
+
+                $path = URL . 'posts/create';
+                header('Location: ' . $path);
+            }
+        }
     }
 }

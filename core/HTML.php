@@ -29,54 +29,72 @@ class HTML
 		
 		return '<input type="submit"' . $attrs . '/>';
 	}
+
+	public static function select($inputData)
+    {
+        $options = self::pop($inputData['options']);
+        unset($inputData['options']);
+
+        $data = self::pop($inputData['data']);
+        unset($inputData['data']);
+
+        $attrs = self::stringifyAttrs($inputData);
+
+        $html = '<select' . $attrs . '>';
+
+        foreach ($data as $params)
+        {
+            $html .= '<option value="' . $params->{$options['value']} . '">' . $params->{$options['text']} . '</option>';
+        }
+
+        $html .= '</select>';
+
+        return $html;
+    }
+
+    public static function block($type, $inputData, $blockData)
+    {
+        $blockText = self::pop($blockData['text']);
+        $blockAttrs = self::stringifyAttrs($blockData);
+
+        $html = '<div' . $blockAttrs . '>';
+
+        if (!empty($inputData['id']))
+        {
+            $html .= '<label for="' . $inputData['id'] . '">' . $blockText . '</label>';
+            $html .= self::{$type}($inputData);
+        }
+        else
+        {
+            $html .= '<label>' . $blockText;
+            $html .= self::{$type}($inputData);
+            $html .= '</label>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
 	
 	public static function inputBlock($inputData, $blockData)
 	{
-		$blockText = self::pop($blockData['text']);
-		$blockAttrs = self::stringifyAttrs($blockData);
-		
-		$html = '<div' . $blockAttrs . '>';
-		
-		if (!empty($inputData['id']))
-		{
-			$html .= '<label for="' . $inputData['id'] . '">' . $blockText . '</label>';
-			$html .= self::input($inputData);
-		}
-		else 
-		{
-			$html .= '<label>' . $blockText;
-            $html .= self::input($inputData);
-			$html .= '</label>';
-		}
-		
-		$html .= '</div>';
-		
-		return $html;
+        return self::block('input', $inputData, $blockData);
 	}
 
 	public static function textareaBlock($inputData, $blockData)
 	{
-		$blockText = self::pop($blockData['text']);
-		$blockAttrs = self::stringifyAttrs($blockData);
-
-		$html = '<div' . $blockAttrs . '>';
-
-		if (!empty($inputData['id']))
-		{
-			$html .= '<label for="' . $inputData['id'] . '">' . $blockText . '</label>';
-            $html .= self::textarea($inputData);
-		}
-		else
-		{
-			$html .= '<label>' . $blockText;
-            $html .= self::textarea($inputData);
-			$html .= '</label>';
-		}
-
-		$html .= '</div>';
-
-		return $html;
+        return self::block('textarea', $inputData, $blockData);
 	}
+
+	public static function submitBlock($inputData, $blockData)
+    {
+        return self::block('submit', $inputData, $blockData);
+    }
+
+	public static function selectBlock($inputData, $blockData)
+    {
+        return self::block('select', $inputData, $blockData);
+    }
 
 	public static function errors($errors)
     {
@@ -111,7 +129,7 @@ class HTML
 
 	private static function pop(&$data)
     {
-        $result = '';
+        $result = null;
 
 		if (!empty($data))
         {

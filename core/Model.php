@@ -11,6 +11,17 @@ class Model
         $this->_db = Database::getInstance();
     }
 
+    public function populate($data)
+    {
+        foreach ($data as $key => $value)
+        {
+            if (property_exists($this, $key))
+            {
+                $this->{$key} = $value;
+            }
+        }
+    }
+
     public function find($params = [])
     {
         return (array) $this->_db->find($this->_table, $params, get_class($this));
@@ -68,9 +79,11 @@ class Model
         return $this->_db->query($sql, $bind);
     }
 
-    public function all()
+    public function all($class = false)
     {
-        return $this->_db->all($this->_table);
+        $class = ($class) ? get_class($this) : false;
+
+        return $this->_db->all($this->_table, $class);
     }
 
     public function last($amount = 1, $class = false)

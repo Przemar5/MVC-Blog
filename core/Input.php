@@ -6,17 +6,17 @@ class Input
 	private $_data = [], $_rules = [];
 	
 	
-	public function isGet()
+	public static function isGet()
 	{
-		return $this->getRequestMethod() === 'GET';
+		return self::getRequestMethod() === 'GET';
 	}
 	
-	public function isPost()
+	public static function isPost()
 	{
-		return $this->getRequestMethod() === 'POST';
+		return self::getRequestMethod() === 'POST';
 	}
 	
-	public function getRequestMethod()
+	public static function getRequestMethod()
 	{
 		return strtoupper($_SERVER['REQUEST_METHOD']);
 	}

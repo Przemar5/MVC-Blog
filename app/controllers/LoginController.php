@@ -16,9 +16,7 @@ class LoginController extends Controller
 	
 	public function verify_action()
 	{
-		$input = new Input;
-		
-		if ($input->isPost())
+		if (Input::isPost())
 		{
             $this->loadModel('users');
             $this->usersModel->populate($_POST);

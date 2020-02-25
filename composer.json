@@ -1,0 +1,13 @@
+{
+    "name": "przemek/new-blog",
+    "license": "'Free to use, modify and share, but not to sell in the given form or admit that's your (if you don't change it)'",
+    "authors": [
+        {
+            "name": "Przemek Krogulski",
+            "email": "przemar5@o2.pl"
+        }
+    ],
+    "require": {
+        "genert/bbcode": "^1.1"
+    }
+}

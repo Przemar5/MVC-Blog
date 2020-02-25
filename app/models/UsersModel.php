@@ -26,17 +26,6 @@ class UsersModel extends Model
         parent::__construct('users');
     }
 
-    public function populate($data)
-    {
-        foreach ($data as $key => $value)
-        {
-            if (property_exists($this, $key))
-            {
-                $this->{$key} = $value;
-            }
-        }
-    }
-
     public function check()
     {
         $this->validation = new Validator;

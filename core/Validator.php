@@ -66,6 +66,11 @@ class Validator
 	{
 		return preg_match('/^' . $pattern . '$/', $value);
 	}
+
+	public function numeric($value)
+	{
+		return is_numeric($value);
+	}
 	
 	public function errors()
 	{
