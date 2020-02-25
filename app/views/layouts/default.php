@@ -19,7 +19,7 @@
 		<?= $this->content('head'); ?>
   	</head>
   	<body>
-        <?php $this->include('navbar'); ?>
+        <?= $this->include('navbar'); ?>
 
   		<div class="container-fluid">
   			<?= $this->content('body'); ?>

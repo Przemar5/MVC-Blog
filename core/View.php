@@ -26,9 +26,9 @@ class View
 		require_once($layout);
 	}
 
-	public function include($name)
+	public function include($file)
     {
-        $this->render('layouts/' . $name);
+        include_once ROOT . DS . 'app' . DS . 'views' . DS . 'layouts' . DS . $file . '.php';
     }
 	
 	public function content($type)

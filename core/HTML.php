@@ -12,28 +12,27 @@ class HTML
 	{
 		$attrs = self::stringifyAttrs($inputData);
 		
-		echo '<input' . $attrs . '/>';
+		return '<input' . $attrs . '/>';
 	}
+
+	public static function textarea($inputData)
+    {
+        $text = self::pop($inputData['text']);
+        $attrs = self::stringifyAttrs($inputData);
+
+        return '<textarea' . $attrs . '>' . $text . '</textarea>';
+    }
 	
 	public static function submit($inputData)
 	{
 		$attrs = self::stringifyAttrs($inputData);
 		
-		echo '<input type="submit"' . $attrs . '/>';
+		return '<input type="submit"' . $attrs . '/>';
 	}
 	
 	public static function inputBlock($inputData, $blockData)
 	{
-		$blockText = '';
-		
-		if (!empty($blockData['text']))
-		{
-			$blockText = $blockData['text'];
-			
-			unset($blockData['text']);
-		}
-		
-		$inputAttrs = self::stringifyAttrs($inputData);
+		$blockText = self::pop($blockData['text']);
 		$blockAttrs = self::stringifyAttrs($blockData);
 		
 		$html = '<div' . $blockAttrs . '>';
@@ -41,33 +40,61 @@ class HTML
 		if (!empty($inputData['id']))
 		{
 			$html .= '<label for="' . $inputData['id'] . '">' . $blockText . '</label>';
-			$html .= '<input' . $inputAttrs . '/>';
+			$html .= self::input($inputData);
 		}
 		else 
 		{
 			$html .= '<label>' . $blockText;
-			$html .= '<input' . $inputAttrs . '/>';
+            $html .= self::input($inputData);
 			$html .= '</label>';
 		}
 		
 		$html .= '</div>';
 		
-		echo $html;
+		return $html;
+	}
+
+	public static function textareaBlock($inputData, $blockData)
+	{
+		$blockText = self::pop($blockData['text']);
+		$blockAttrs = self::stringifyAttrs($blockData);
+
+		$html = '<div' . $blockAttrs . '>';
+
+		if (!empty($inputData['id']))
+		{
+			$html .= '<label for="' . $inputData['id'] . '">' . $blockText . '</label>';
+            $html .= self::textarea($inputData);
+		}
+		else
+		{
+			$html .= '<label>' . $blockText;
+            $html .= self::textarea($inputData);
+			$html .= '</label>';
+		}
+
+		$html .= '</div>';
+
+		return $html;
 	}
 
 	public static function errors($errors)
     {
+        $result = '';
+
         if (count($errors))
         {
-            echo '<div class="p-3 mb-3">';
+            $result .= '<div class="p-3 mb-3">';
 
             foreach ($errors as $key => $value)
             {
-                echo '<div class="text-danger">' . $value . '</div>';
+                $result .= '<div class="text-danger">' . $value . '</div>';
             }
 
-            echo '</div>';
+            $result .= '</div>';
         }
+
+        return $result;
     }
 	
 	private static function stringifyAttrs($data)
@@ -81,4 +108,18 @@ class HTML
 		
 		return $result;
 	}
+
+	private static function pop(&$data)
+    {
+        $result = '';
+
+		if (!empty($data))
+        {
+            $result = $data;
+
+            unset($data);
+        }
+
+		return $result;
+    }
 }
