@@ -59,7 +59,7 @@ class UsersModel extends Model
         }
     }
 	
-	public static function currentUserId()
+	public static function currentLoggedInUserId()
 	{
 		return Session::get(USER_SESSION_NAME);
 	}

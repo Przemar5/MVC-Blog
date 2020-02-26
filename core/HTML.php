@@ -23,6 +23,13 @@ class HTML
         return '<textarea' . $attrs . '>' . $text . '</textarea>';
     }
 	
+	public static function reset($inputData)
+	{
+		$attrs = self::stringifyAttrs($inputData);
+		
+		return '<input type="reset"' . $attrs . '/>';
+	}
+	
 	public static function submit($inputData)
 	{
 		$attrs = self::stringifyAttrs($inputData);

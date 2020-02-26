@@ -28,12 +28,17 @@ class PostsModel extends Model
             'required' => ['msg' => 'Category is required.'],
             'numeric' => ['msg' => 'Invalid category.'],
             'regex' => ['args' => ['[0-9]{1,7}'], 'msg' => 'Invalid category.'],
-            'exists' => ['msg' => "Category doesn't exist."]
+            'exists' => ['args' => ['categories', 'id'], 'msg' => "Category doesn't exist."]
         ],
         'body' => [
             'required' => ['msg' => 'Post body is required.'],
             'min' => ['args' => [20], 'msg' => 'Post must be equal or longer than 20 characters.'],
-        ]
+        ],
+		'user_id' => [
+			'required' => ['msg' => ''],
+			'numeric' => ['msg' => ''],
+			'exists' => ['args' => ['users', 'id'], 'msg' => ''],
+		]
     ];
     private $formValues = ['title', 'label', 'slug', 'category_id', 'tags', 'body', 'user_id'];
 
@@ -53,10 +58,15 @@ class PostsModel extends Model
 		}
 	}
 
-    public function check()
+    public function check($update = false)
     {
         $this->validation = new Validator;
-
+		
+		if ($update)
+		{
+			$this->validationRules['user_id']['match'] = ['args' => [$this->user_id], 'msg' =>''];
+		}
+		
         $this->validation->check([
             'title' => $this->title,
             'label' => $this->label,
@@ -64,6 +74,7 @@ class PostsModel extends Model
             'category_id' => $this->category_id,
             'tags' => $this->tags,
             'body' => $this->body,
+			'user_id' => UsersModel::currentLoggedInUserId(),
         ], $this->validationRules);
 
         if ($this->validation->passed())
@@ -93,7 +104,14 @@ class PostsModel extends Model
 	{
 	    if ($this->id)
 		{
-//			$this->_db->update()
+			return $this->update($this->id, [
+				'title' => $this->title,
+				'label' => $this->label,
+				'slug' => $this->slug,
+				'category_id' => $this->category_id,
+				'body' => $this->body,
+				'updated_at' => Helper::currentTimestamp(),
+			]);
 		}
 		else
 		{
@@ -103,7 +121,7 @@ class PostsModel extends Model
 				'slug' => $this->slug,
 				'category_id' => $this->category_id,
 				'body' => $this->body,
-				'user_id' => UsersModel::currentUserId(),
+				'user_id' => UsersModel::currentLoggedInUserId(),
 			]);
 		}
 	}
@@ -116,17 +134,9 @@ class PostsModel extends Model
         return $errors;
     }
 
-    public function formValues($id = '')
+    public function formValues()
     {
-        if (Input::isPost())
-        {
-            return Helper::linkAssociative($this->formValues, $_POST);
-        }
-
-        if ($this->id)
-        {
-            return Helper::linkAssociative($this->formValues,(array) $this);
-        }
+        return Helper::linkAssociative($this->formValues, $_POST);
     }
 
     public function truncateText($length = 300)

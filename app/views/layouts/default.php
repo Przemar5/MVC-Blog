@@ -19,7 +19,7 @@
 		<?= $this->content('head'); ?>
   	</head>
   	<body>
-<!--        --><?//= $this->include('navbar'); ?>
+        <?= $this->include('navbar'); ?>
 
   		<div class="container-fluid">
             <?= (Session::exists('last_action')) ? Session::pop('last_action') : ''; ?>

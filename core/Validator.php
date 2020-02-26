@@ -72,6 +72,16 @@ class Validator
 		return is_numeric($value);
 	}
 	
+	public function exists($value, $table, $column)
+	{
+		return Database::getInstance()->query('SELECT * FROM ' . $table . ' WHERE ' . $column . ' = ' . $value . ' LIMIT 1');
+	}
+	
+	public function match($value1, $value2)
+	{
+		return $value1 == $value2;
+	}
+	
 	public function errors()
 	{
 		return $this->_errors;

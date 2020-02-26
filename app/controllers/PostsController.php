@@ -43,11 +43,10 @@ class PostsController extends Controller
         if (Input::isPost())
         {
             $this->verifyCreated();
+            $this->view->errors = $this->postsModel->popErrors();
         }
-
+		
         $this->view->post = $this->postsModel->populate($_POST);
-        dd($this->view->post);
-        die;
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/create');
@@ -57,9 +56,15 @@ class PostsController extends Controller
     {
         if (Input::isPost())
         {
-            $this->verifyCreated();
+			$this->verifyUpdated($slug);
+            $this->view->errors = $this->postsModel->popErrors();
+			$this->view->post = $this->postsModel->populate($_POST);
         }
-
+		else 
+		{
+			$this->view->post = $this->postsModel->findBySlug($slug);
+		}
+		
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/edit');
@@ -76,9 +81,21 @@ class PostsController extends Controller
             $path = URL . 'posts';
             header('Location: ' . $path);
         }
-        else
+    }
+
+    private function verifyUpdated($slug)
+    {
+		$post = $this->postsModel->findBySlug($slug);
+		
+        $this->postsModel->populate($post, ['id', 'user_id']);
+        $this->postsModel->populate($_POST);
+		
+        if ($this->postsModel->check(true) && $this->postsModel->save())
         {
-            $this->view->errors = $this->postsModel->popErrors();
+            Session::set('last_action', 'Your post had been added successfully.');
+
+            $path = URL . 'posts';
+            header('Location: ' . $path);
         }
     }
 }

@@ -23,13 +23,13 @@ require_once 'app/controllers/HomeController.php';
 
 function d($data, $line = '', $function = '')
 {
-    if (gettype($data) === 'array')
+    if (gettype($data) === 'array' || gettype($data) === 'object')
     {
         echo '<pre>';
         var_dump($data);
         echo '</pre>';
     }
-    else
+    else 
     {
         echo $data;
     }

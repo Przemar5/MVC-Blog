@@ -1,12 +1,11 @@
-
 <div class="container my-5">
     <div class="col-md-10 offset-md-1 card px-3 py-4 shadow">
         <div class="card-body">
             <?= HTML::errors($this->errors); ?>
 
             <h1 class="text-center">Create Post</h1>
-
-       		<?php $this->partial('posts', 'form'); ?>
+            
+			<?php $this->partial('posts', 'form'); ?>
         </div>
     </div>
 </div>

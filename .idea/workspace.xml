@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/Form.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/NewBlog.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/NewBlog.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/PostsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/PostsController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/PostsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/PostsModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/UsersModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/UsersModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/layouts/default.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/layouts/default.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/posts/create.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/posts/create.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/posts/partials/form.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/posts/partials/form.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/posts/show.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/posts/show.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/Database.php" beforeDir="false" afterPath="$PROJECT_DIR$/core/Database.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/HTML.php" beforeDir="false" afterPath="$PROJECT_DIR$/core/HTML.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/Helper.php" beforeDir="false" afterPath="$PROJECT_DIR$/core/Helper.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
-    </list>
+    <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -293,16 +277,15 @@
       <updated>1582545340048</updated>
       <workItem from="1582545356382" duration="21157000" />
       <workItem from="1582624088876" duration="28465000" />
-      <workItem from="1582707379256" duration="6970000" />
+      <workItem from="1582707379256" duration="7342000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="56592000" />
+    <option name="totallyTimeSpent" value="56964000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="484" y="0" width="1123" height="867" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23424271" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />

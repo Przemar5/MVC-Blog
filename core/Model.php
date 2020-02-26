@@ -11,15 +11,17 @@ class Model
         $this->_db = Database::getInstance();
     }
 
-    public function populate($data)
+    public function populate($data, $values = [])
     {
         foreach ($data as $key => $value)
         {
-            if (property_exists($this, $key))
+            if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
             {
                 $this->{$key} = $value;
             }
         }
+		
+		return $this;
     }
 
     public function find($params = [])

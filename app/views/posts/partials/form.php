@@ -10,7 +10,8 @@
         ['text' => 'Category', 'class' => 'form-group']); ?>
     <?= HTML::inputBlock(['type' => 'text', 'id' => 'tags', 'name' => 'tags', 'value' => $this->post->tags, 'class' => 'form-control'],
         ['text' => 'Tags', 'class' => 'form-group']); ?>
-    <?= HTML::textareaBlock(['id' => 'body', 'name' => 'body', 'rows' => '10', 'value' => $this->post->body, 'class' => 'form-control'],
+    <?= HTML::textareaBlock(['id' => 'body', 'name' => 'body', 'rows' => '10', 'text' => $this->post->body, 'class' => 'form-control'],
         ['text' => 'Post Body', 'class' => 'form-group']); ?>
-    <?= HTML::submit(['value' => 'Login', 'class' => 'btn btn-block btn-primary']); ?>
+    <?= HTML::submit(['value' => 'Create', 'class' => 'btn btn-block btn-primary']); ?>
+    <?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-default']); ?>
 </form>

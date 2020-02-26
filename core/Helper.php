@@ -24,6 +24,13 @@ class Helper
         return date('Y, j M, g:i A', $timestamp);
     }
 
+    public static function currentTimestamp()
+    {
+        $timestamp = strtotime(time());
+
+        return date('Y-m-d H:i:s', $timestamp);
+    }
+
     public static function linkAssociative($keys, $data)
     {
         $result = [];
