@@ -3,7 +3,7 @@
 
 class Model
 {
-    protected $_db, $_table;
+    protected $_db, $_table, $_softDelete = true;
 
     public function __construct($table)
     {
@@ -37,9 +37,33 @@ class Model
     public function findById($id)
     {
         return $this->findFirst([
-            'conditions' => 'id = ?',
+            'conditions' => 'id = ? ',
             'bind' => [$id],
         ]);
+    }
+
+    public function all($values = [], $class = false)
+    {
+        $class = ($class) ? get_class($this) : false;
+
+        return $this->_db->all($this->_table, $values, $class);
+    }
+
+    public function last($amount = 1, $params = [])
+    {
+        if (is_numeric($amount))
+        {
+            $params['limit'] = $amount;
+            $params['order'] = ' id DESC';
+
+            return $this->find($params);
+        }
+        return [];
+    }
+
+    public function count($params = [])
+    {
+        return $this->_db->selectCount($this->_table, $params);
     }
 
     public function insert($fields)
@@ -79,23 +103,5 @@ class Model
     public function query($sql, $bind = [])
     {
         return $this->_db->query($sql, $bind);
-    }
-
-    public function all($class = false)
-    {
-        $class = ($class) ? get_class($this) : false;
-
-        return $this->_db->all($this->_table, $class);
-    }
-
-    public function last($amount = 1, $class = false)
-    {
-        if (is_numeric($amount))
-        {
-            $sql = 'SELECT * FROM ' . $this->_table . ' ORDER BY created_at DESC LIMIT ' . $amount ;
-            $class = ($class) ? get_class($this) : false;
-            return $this->_db->query($sql, [], $class)->results();
-        }
-        return [];
     }
 }

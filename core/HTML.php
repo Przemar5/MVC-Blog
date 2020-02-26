@@ -121,6 +121,52 @@ class HTML
 
         return $result;
     }
+
+    public static function pagination($tabs = 4, $active = 1, $url = '')
+    {
+        $html = '';
+
+        $html .= '<nav aria-label="...">';
+        $html .= '<ul class="pagination">';
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="#" tabindex="-1">Previous</a>';
+        $html .= '</li>';
+
+//    <li class="page-item"><a class="page-link" href="#">1</a></li>
+//    <li class="page-item active">
+//      <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+//    </li>
+//    <li class="page-item"><a class="page-link" href="#">3</a></li>
+//    <li class="page-item">
+//      <a class="page-link" href="#">Next</a>
+//    </li>
+
+        for ($i = 1; $i <= $tabs; $i++)
+        {
+            if ($i === $active)
+            {
+                $html .= '<li class="page-item active">';
+                $html .= '<a class="page-link" href="' . $url . $i . '">' . $i;
+                $html .= '<span class="sr-only">(current)</span></a>';
+                $html .= '</li>';
+            }
+            else
+            {
+                $html .= '<li class="page-item">';
+                $html .= '<a class="page-link" href="' . $url . $i . '">' . $i;
+                $html .= '</a>';
+                $html .= '</li>';
+            }
+        }
+
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="#">Next</a>';
+        $html .= '</li>';
+        $html .= '</ul>';
+        $html .= '</nav>';
+
+        return $html;
+    }
 	
 	private static function stringifyAttrs($data)
 	{

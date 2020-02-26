@@ -3,7 +3,8 @@
 
 class PostsModel extends Model
 {
-    public $id, $label, $title, $slug, $category_id, $tags, $body, $user_id, $created_at, $updated_at, $deleted;
+    public $id, $label, $title, $slug, $category_id, $tags,
+        $body, $user_id, $created_at, $updated_at, $deleted, $lastSelectedId;
 
     private $validationRules = [
         'title' => [
@@ -47,16 +48,6 @@ class PostsModel extends Model
     {
         parent::__construct('posts');
     }
-	
-	private function loadModelFile($table)
-	{
-		$path = ROOT . DS . 'app' . DS . 'models' . DS . $table . 'Model.php';
-		
-		if (file_exists($path))
-		{
-			return require_once($path);
-		}
-	}
 
     public function check($update = false)
     {
@@ -89,15 +80,28 @@ class PostsModel extends Model
         }
     }
 
-    public function findBySlug($slug)
+    public function findBySlug($slug, $values = '*')
     {
         $validation = new Validator;
 
         if ($validation->check(['slug' => $slug], $this->validationRules['slug'], false))
         {
-            return $this->findFirst(['conditions' => ['slug' => $slug]]);
+            return $this->findFirst([
+                'values' => $values,
+                'conditions' => ['slug' => $slug]
+            ]);
         }
         return false;
+    }
+
+    public function lastFrom($amount = 1, $from = 0, $params = [])
+    {
+
+    }
+
+    public function lastSelectedId()
+    {
+        return $this->_db->lastSelectId();
     }
 	
 	public function save()

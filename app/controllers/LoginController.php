@@ -27,16 +27,12 @@ class LoginController extends Controller
 
 //                $value = uniqid() . Helper::generateRandomString(16);
                 Session::set(USER_SESSION_NAME, $this->usersModel->id);
-
-                $path = URL . 'dashboard';
-                header('Location: ' . $path);
+                Router::redirect('dashboard');
             }
             else
             {
                 Session::setMultiple($this->usersModel->errors);
-
-                $path = URL . 'login';
-                header('Location: ' . $path);
+                Router::redirect('login');
             }
 		}
 	}

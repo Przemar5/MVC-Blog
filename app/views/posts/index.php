@@ -31,3 +31,5 @@
 <h4>There are no posts yet. Create some!</h4>
 
 <?php endif; ?>
+
+<?= $this->pagination; ?>

@@ -3,7 +3,7 @@
         <div class="card-body">
             <?= HTML::errors($this->errors); ?>
 
-            <h1 class="text-center">Create Post</h1>
+            <h1 class="text-center">Edit Post</h1>
             
 			<?php $this->partial('posts', 'form'); ?>
         </div>

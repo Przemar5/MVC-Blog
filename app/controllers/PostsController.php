@@ -15,7 +15,9 @@ class PostsController extends Controller
 	
 	public function index_action()
 	{
-	    $this->view->posts = $this->postsModel->last(5, true);
+	    $postsPerPage = 5;
+	    $this->view->posts = $this->postsModel->lastFrom($postsPerPage, false, true);
+	    $this->view->pagination = $this->preparePagination($postsPerPage);
 
 	    foreach ($this->view->posts as $post)
         {
@@ -31,8 +33,7 @@ class PostsController extends Controller
 
         if (!$this->view->post)
         {
-            $path = URL . 'posts';
-            header('Location: ' . $path);
+            Router::redirect(URL . 'posts');
         }
 
         $this->view->render('posts/show');
@@ -45,7 +46,8 @@ class PostsController extends Controller
             $this->verifyCreated();
             $this->view->errors = $this->postsModel->popErrors();
         }
-		
+
+        $this->view->submitButtonValue = 'Create';
         $this->view->post = $this->postsModel->populate($_POST);
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
@@ -64,11 +66,25 @@ class PostsController extends Controller
 		{
 			$this->view->post = $this->postsModel->findBySlug($slug);
 		}
-		
+
+        $this->view->submitButtonValue = 'Edit';
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/edit');
     }
+	
+	public function delete_action($slug)
+	{
+		$post = $this->postsModel->findBySlug($slug);
+
+		if (Session::exists(USER_SESSION_NAME) && Session::get(USER_SESSION_NAME) == $post->user_id)
+		{
+			$post->delete();
+			Session::set('last_action', 'Post had been removed.');
+		}
+
+        Router::redirect('posts');
+	}
 
     private function verifyCreated()
     {
@@ -77,9 +93,7 @@ class PostsController extends Controller
         if ($this->postsModel->check() && $this->postsModel->save())
         {
             Session::set('last_action', 'Your post had been added successfully.');
-
-            $path = URL . 'posts';
-            header('Location: ' . $path);
+            Router::redirect('posts');
         }
     }
 
@@ -89,13 +103,22 @@ class PostsController extends Controller
 		
         $this->postsModel->populate($post, ['id', 'user_id']);
         $this->postsModel->populate($_POST);
-		
+
         if ($this->postsModel->check(true) && $this->postsModel->save())
         {
-            Session::set('last_action', 'Your post had been added successfully.');
-
-            $path = URL . 'posts';
-            header('Location: ' . $path);
+            echo 'good';
+            Session::set('last_action', 'You have updated post successfully.');
+            Router::redirect('posts');
         }
+        echo 'bad';
+        die;
+    }
+
+    private function preparePagination($postsPerPage)
+    {
+        $posts = $this->postsModel->count();
+        $tabsNumber = ceil($posts / $postsPerPage);
+
+        return HTML::pagination($tabsNumber, 1, URL . 'posts?page=');
     }
 }

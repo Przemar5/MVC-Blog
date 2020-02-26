@@ -12,6 +12,6 @@
         ['text' => 'Tags', 'class' => 'form-group']); ?>
     <?= HTML::textareaBlock(['id' => 'body', 'name' => 'body', 'rows' => '10', 'text' => $this->post->body, 'class' => 'form-control'],
         ['text' => 'Post Body', 'class' => 'form-group']); ?>
-    <?= HTML::submit(['value' => 'Create', 'class' => 'btn btn-block btn-primary']); ?>
+    <?= HTML::submit(['value' => $this->submitButtonValue, 'class' => 'btn btn-block btn-primary']); ?>
     <?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-default']); ?>
 </form>
