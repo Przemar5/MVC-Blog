@@ -21,6 +21,28 @@ class Helper
     {
         $timestamp = strtotime($timeString);
 
-        return date('Y, j M, g:i A');
+        return date('Y, j M, g:i A', $timestamp);
+    }
+
+    public static function linkAssociative($keys, $data)
+    {
+        $result = [];
+
+        if (count($keys) && count($data))
+        {
+            foreach ($keys as $key)
+            {
+                if (array_key_exists($key, $data))
+                {
+                    $result[$key] = $data[$key];
+                }
+                else
+                {
+                    $result[$key] = '';
+                }
+            }
+        }
+
+        return $result;
     }
 }

@@ -58,4 +58,9 @@ class UsersModel extends Model
             $this->errors = $this->validation->errors();
         }
     }
+	
+	public static function currentUserId()
+	{
+		return Session::get(USER_SESSION_NAME);
+	}
 }

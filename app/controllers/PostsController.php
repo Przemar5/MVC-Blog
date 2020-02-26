@@ -10,11 +10,12 @@ class PostsController extends Controller
 		$this->loadModel('posts');
         $this->loadModel('categories');
         $this->loadModel('tags');
+        $this->loadModel('users');
 	}
 	
 	public function index_action()
 	{
-	    $this->view->posts = $this->postsModel->last(3, true);
+	    $this->view->posts = $this->postsModel->last(5, true);
 
 	    foreach ($this->view->posts as $post)
         {
@@ -39,30 +40,45 @@ class PostsController extends Controller
 
     public function create_action()
     {
-        $this->view->errors = Session::popMultiple(['title', 'label', 'slug', 'category_id', 'body']);
-        $this->view->formAction = URL . 'posts/store';
+        if (Input::isPost())
+        {
+            $this->verifyCreated();
+        }
+
+        $this->view->post = $this->postsModel->populate($_POST);
+        dd($this->view->post);
+        die;
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/create');
     }
 
-    public function store_action()
+    public function edit_action($slug)
     {
         if (Input::isPost())
         {
-            $this->postsModel->populate($_POST);
+            $this->verifyCreated();
+        }
 
-            if ($this->postsModel->check())
-            {
-                echo 'good';
-            }
-            else
-            {
-                Session::setMultiple($this->postsModel->errors);
+        $this->view->categories = $this->categoriesModel->all();
+        $this->view->tags = $this->tagsModel->all();
+        $this->view->render('posts/edit');
+    }
 
-                $path = URL . 'posts/create';
-                header('Location: ' . $path);
-            }
+    private function verifyCreated()
+    {
+        $this->postsModel->populate($_POST);
+
+        if ($this->postsModel->check() && $this->postsModel->save())
+        {
+            Session::set('last_action', 'Your post had been added successfully.');
+
+            $path = URL . 'posts';
+            header('Location: ' . $path);
+        }
+        else
+        {
+            $this->view->errors = $this->postsModel->popErrors();
         }
     }
 }

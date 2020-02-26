@@ -100,7 +100,7 @@ class HTML
     {
         $result = '';
 
-        if (count($errors))
+        if ($errors && count($errors))
         {
             $result .= '<div class="p-3 mb-3">';
 

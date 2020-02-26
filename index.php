@@ -7,14 +7,16 @@ define('ROOT', __DIR__);
 require_once 'config/config.php';
 
 require_once 'core/Controller.php';
-require_once 'core/Model.php';
-require_once 'core/View.php';
+require_once 'core/Database.php';
+require_once 'core/Form.php';
+require_once 'core/Helper.php';
 require_once 'core/HTML.php';
 require_once 'core/Input.php';
-require_once 'core/Validator.php';
-require_once 'core/Database.php';
+require_once 'core/Model.php';
+require_once 'core/Router.php';
 require_once 'core/Session.php';
-require_once 'core/Helper.php';
+require_once 'core/Validator.php';
+require_once 'core/View.php';
 
 require_once 'app/controllers/HomeController.php';
 

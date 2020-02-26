@@ -84,7 +84,7 @@ class Database
 		$bind = [];
 		$order = '';
 		$limit = '';
-		
+
 		// Conditions
 		if (isset($params['conditions']))
 		{
@@ -92,6 +92,10 @@ class Database
 			{
 				foreach ($params['conditions'] as $key => $value)
 				{
+				    if (gettype($value) === 'string')
+                    {
+                        $value = "'" . $value . "'";
+                    }
 					$conditionString .= ' ' . $key . ' = ' . $value . ' AND';
 				}
 				$conditionString = trim($conditionString);
@@ -107,7 +111,7 @@ class Database
 				$conditionString = ' WHERE ' . $conditionString;
 			}
 		}
-		
+
 		// Binding
 		if (array_key_exists('bind', $params))
 		{
