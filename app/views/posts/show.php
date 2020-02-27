@@ -12,7 +12,7 @@
         
         <div class="pull-right">
             <a href="<?= URL . 'posts/edit/' . $this->post->slug; ?>" class="btn btn-sm btn-primary">Edit</a>
-            <a href="<?= URL . 'posts/delete/' . $this->post->slug; ?>" class="btn btn-sm btn-primary">Delete</a>
+            <a href="<?= URL . 'posts/delete/' . $this->post->slug; ?>" class="btn btn-sm btn-danger">Delete</a>
         </div>
     </h2>
 

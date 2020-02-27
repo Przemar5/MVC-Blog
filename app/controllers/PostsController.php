@@ -3,25 +3,30 @@
 
 class PostsController extends Controller
 {
+    private const POSTS_PER_PAGE = 5;
+    private $_currentPage = 1;
+
 	public function __construct()
 	{
 		parent::__construct();
 
-		$this->loadModel('posts');
-        $this->loadModel('categories');
-        $this->loadModel('tags');
-        $this->loadModel('users');
+		$this->loadModels(['posts', 'categories', 'tags', 'users']);
 	}
 	
 	public function index_action()
 	{
-	    $postsPerPage = 5;
-	    $this->view->posts = $this->postsModel->lastFrom($postsPerPage, false, true);
-	    $this->view->pagination = $this->preparePagination($postsPerPage);
+	    $this->_currentPage = (Input::get('page')) ? Input::get('page') : 1;
 
-	    foreach ($this->view->posts as $post)
+        $this->view->posts = $this->postsModel->lastFrom(self::POSTS_PER_PAGE, $this->_getPostIdOffset());
+	    $this->view->pagination = $this->_preparePagination();
+        $this->postsModel->lastSelectId();
+
+        if (count($this->view->posts))
         {
-            $post->truncateText(600);
+            foreach ($this->view->posts as $post)
+            {
+                $post->truncateText(600);
+            }
         }
 
 		$this->view->render('posts/index');
@@ -43,7 +48,7 @@ class PostsController extends Controller
     {
         if (Input::isPost())
         {
-            $this->verifyCreated();
+            $this->_verifyCreated();
             $this->view->errors = $this->postsModel->popErrors();
         }
 
@@ -58,7 +63,7 @@ class PostsController extends Controller
     {
         if (Input::isPost())
         {
-			$this->verifyUpdated($slug);
+			$this->_verifyUpdated($slug);
             $this->view->errors = $this->postsModel->popErrors();
 			$this->view->post = $this->postsModel->populate($_POST);
         }
@@ -86,7 +91,7 @@ class PostsController extends Controller
         Router::redirect('posts');
 	}
 
-    private function verifyCreated()
+    private function _verifyCreated()
     {
         $this->postsModel->populate($_POST);
 
@@ -97,7 +102,7 @@ class PostsController extends Controller
         }
     }
 
-    private function verifyUpdated($slug)
+    private function _verifyUpdated($slug)
     {
 		$post = $this->postsModel->findBySlug($slug);
 		
@@ -114,11 +119,18 @@ class PostsController extends Controller
         die;
     }
 
-    private function preparePagination($postsPerPage)
+    private function _preparePagination()
     {
         $posts = $this->postsModel->count();
-        $tabsNumber = ceil($posts / $postsPerPage);
+        $tabsNumber = ceil($posts / self::POSTS_PER_PAGE);
 
-        return HTML::pagination($tabsNumber, 1, URL . 'posts?page=');
+        return HTML::pagination($tabsNumber, (int) $this->_currentPage, URL . 'posts?page=');
+    }
+
+    private function _getPostIdOffset()
+    {
+        return $this->postsModel->getIds()[($this->_currentPage - 1) * self::POSTS_PER_PAGE];
+
+        return ($this->_currentPage - 1) * self::POSTS_PER_PAGE + 1;
     }
 }

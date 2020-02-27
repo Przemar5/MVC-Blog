@@ -3,12 +3,25 @@
 
 class Model
 {
-    protected $_db, $_table, $_softDelete = true;
+    protected $_db, $_table, $_softDelete = true, $lastSelectId;
 
     public function __construct($table)
     {
         $this->_table = $table;
         $this->_db = Database::getInstance();
+    }
+
+    protected function loadModel($name)
+    {
+        $path = ROOT . DS . 'app' . DS . 'models' . DS . $name . 'Model.php';
+
+        if (file_exists($path))
+        {
+            require_once $path;
+
+            $modelName = $name . 'Model';
+            $this->{$modelName} = new $modelName;
+        }
     }
 
     public function populate($data, $values = [])
@@ -34,12 +47,12 @@ class Model
         return $this->_db->findFirst($this->_table, $params, get_class($this));
     }
 
-    public function findById($id)
+    public function findById($id, $params = [])
     {
-        return $this->findFirst([
-            'conditions' => 'id = ? ',
-            'bind' => [$id],
-        ]);
+        $params['conditions'] = 'id = ? ';
+        $params['bind'] = [$id];
+
+        return $this->findFirst($params);
     }
 
     public function all($values = [], $class = false)
@@ -56,9 +69,38 @@ class Model
             $params['limit'] = $amount;
             $params['order'] = ' id DESC';
 
-            return $this->find($params);
+            $result = $this->find($params);
+            $this->lastSelectId = $this->_db->lastSelectID();
+
+            return $result;
         }
         return [];
+    }
+
+    public function lastFrom($amount = 1, $from = 0, $params = [])
+    {
+        if (is_numeric($amount))
+        {
+            $params['conditions'] = 'id <= ' . $from;
+            $params['limit'] = $amount;
+            $params['order'] = ' id DESC';
+
+            $result = $this->find($params);
+            $this->lastSelectId = $this->_db->lastSelectId();
+
+            return $result;
+        }
+        return [];
+    }
+
+    public function select($params = [])
+    {
+        return $this->_db->all($this->_table, $params);
+    }
+
+    public function lastSelectId()
+    {
+        return $this->_db->lastSelectId();
     }
 
     public function count($params = [])

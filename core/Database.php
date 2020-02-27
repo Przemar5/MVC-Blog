@@ -4,7 +4,8 @@
 class Database
 {
     private static $_instance = null;
-    private $_pdo, $_query, $_error = false, $_result, $_count = 0, $_lastSelectId = null, $_lastInsertId = null;
+    private $_pdo, $_query, $_error = false, $_result, $_count = 0,
+        $_lastSelectId = null, $_lastInsertId = null, $_lastTable = null, $_primaryKeyName = null;
 
 
     public function __construct()
@@ -155,12 +156,21 @@ class Database
 
         if ($this->query($sql, $bind, $class))
         {
+            $this->_lastTable = $table;
+
             if (!count($this->_result))
             {
                 return false;
             }
             else
             {
+                $lastId = $this->lastSelectID();
+
+                if (!empty($lastId))
+                {
+                    $this->_lastSelectId = $lastId;
+                }
+
                 return true;
             }
         }
@@ -288,9 +298,9 @@ class Database
 
     public function lastSelectID()
     {
-        if (!$this->_lastSelectedId)
+        if (!$this->_lastSelectId)
         {
-            $this->_result[$this->_count - 1]->id;
+            $this->_lastSelectId = $this->last()->{$this->getPrimaryKeyName()};
         }
 
         return $this->_lastSelectId;
@@ -304,5 +314,14 @@ class Database
     public function error()
     {
         return $this->_error;
+    }
+
+    public function getPrimaryKeyName()
+    {
+        if (!empty($this->_lastTable))
+        {
+            return $this->_pdo->query("SHOW KEYS FROM $this->_lastTable WHERE Key_name = 'PRIMARY'")
+                ->fetch(PDO::FETCH_OBJ)->Column_name;
+        }
     }
 }

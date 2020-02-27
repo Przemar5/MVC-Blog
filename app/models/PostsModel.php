@@ -3,8 +3,8 @@
 
 class PostsModel extends Model
 {
-    public $id, $label, $title, $slug, $category_id, $tags,
-        $body, $user_id, $created_at, $updated_at, $deleted, $lastSelectedId;
+    public $id, $label, $title, $slug, $category_id, $category = '', $tags = '',
+        $body, $user_id, $created_at, $updated_at, $deleted;
 
     private $validationRules = [
         'title' => [
@@ -93,16 +93,6 @@ class PostsModel extends Model
         }
         return false;
     }
-
-    public function lastFrom($amount = 1, $from = 0, $params = [])
-    {
-
-    }
-
-    public function lastSelectedId()
-    {
-        return $this->_db->lastSelectId();
-    }
 	
 	public function save()
 	{
@@ -145,12 +135,35 @@ class PostsModel extends Model
 
     public function truncateText($length = 300)
     {
-        $this->body = substr($this->body, 0, $length);
+        $bodyLength = strlen($this->body);
+
+        if ($bodyLength > $length)
+        {
+            $this->body = rtrim(substr($this->body, 0, $length), ". ") . '...';
+        }
     }
 
-    public function divideParagraphs()
+    public function getIds()
     {
-//        preg_replace('/(\r*\n)+/g', '</p><p>', $this->body);
-//        $this->
+        $result = $this->all(['values' => 'id', 'order' => 'id DESC']);
+
+        return ArrayHelper::flattenSingles($result);
+    }
+
+    public function prepareData()
+    {
+        if (!empty($this->category_id))
+        {
+            $this->loadModel('categories');
+            $this->category = $this->categoriesModel->findById($this->category_id, ['values' => 'name']);
+        }
+
+        $this->loadModel('postsTags');
+        $this->tags = $this->postsTagsModel->tagNamesForPost($this->id);
+
+        if (!empty($this->tags))
+        {
+            $this->tags = implode(', ', $this->tags);
+        }
     }
 }

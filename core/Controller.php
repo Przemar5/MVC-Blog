@@ -22,6 +22,23 @@ class Controller
             $this->{$modelName} = new $modelName;
         }
     }
+    public function loadModels($tables)
+    {
+        if (!empty($tables))
+        {
+            if (is_array($tables))
+            {
+                foreach ($tables as $table)
+                {
+                    $this->loadModel($table);
+                }
+            }
+            else
+            {
+                $this->loadModel($tables);
+            }
+        }
+    }
 	
 	public function view()
 	{
