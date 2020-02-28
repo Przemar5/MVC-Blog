@@ -15,6 +15,9 @@
 		<script src="<?= ROOT; ?>js/bootstrap.bundle.min.js"></script>
 		
 		<link rel="stylesheet" href="<?= ROOT; ?>css/custom.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css">
 		
 		<?= $this->content('head'); ?>
   	</head>

@@ -3,7 +3,7 @@
 
 class PostsModel extends Model
 {
-    public $id, $label, $title, $slug, $category_id, $category = '', $tags = '',
+    public $id, $label, $title, $slug, $category_id, $category = '', $tag_id = [],
         $body, $user_id, $created_at, $updated_at, $deleted;
 
     private $validationRules = [
@@ -25,7 +25,7 @@ class PostsModel extends Model
             'max' => ['args' => [150], 'msg' => 'Slug cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z_\-]+'], 'msg' => 'Slug contains illegal characters.'],
         ],
-        'category_id' => [
+		'category_id' => [
             'required' => ['msg' => 'Category is required.'],
             'numeric' => ['msg' => 'Invalid category.'],
             'regex' => ['args' => ['[0-9]{1,7}'], 'msg' => 'Invalid category.'],
@@ -47,6 +47,10 @@ class PostsModel extends Model
     public function __construct()
     {
         parent::__construct('posts');
+		
+		$this->loadModel('postsCategories');
+		$this->loadModel('categories');
+		$this->loadModel('postsTags');
     }
 
     public function check($update = false)
@@ -63,7 +67,7 @@ class PostsModel extends Model
             'label' => $this->label,
             'slug' => $this->slug,
             'category_id' => $this->category_id,
-            'tags' => $this->tags,
+            'tag_id' => $this->tag_id,
             'body' => $this->body,
 			'user_id' => UsersModel::currentLoggedInUserId(),
         ], $this->validationRules);
@@ -102,23 +106,51 @@ class PostsModel extends Model
 				'title' => $this->title,
 				'label' => $this->label,
 				'slug' => $this->slug,
-				'category_id' => $this->category_id,
 				'body' => $this->body,
 				'updated_at' => Helper::currentTimestamp(),
 			]);
 		}
 		else
 		{
-			return $this->insert([
-				'title' => $this->title,
-				'label' => $this->label,
-				'slug' => $this->slug,
-				'category_id' => $this->category_id,
-				'body' => $this->body,
-				'user_id' => UsersModel::currentLoggedInUserId(),
-			]);
+        $this->insertPost();
 		}
 	}
+
+	private function insertPost()
+    {
+        $data = [
+            'title' => $this->title,
+            'label' => $this->label,
+            'slug' => $this->slug,
+            'body' => $this->body,
+            'user_id' => UsersModel::currentLoggedInUserId(),
+            'created_at' => 'NOW()'
+        ];
+
+        if (!$this->insert($data))
+        {
+            return false;
+        }
+
+        $lastPostId = $this->lastInsertId();
+
+        $data = [
+            'post_id' => $lastPostId,
+            'category_id' => $this->category_id
+        ];
+
+        if (!$this->postsCategoriesModel->insert($data))
+        {
+            return false;
+        }
+
+        $data = [
+            'post_id' => $lastPostId,
+            'tag_id' => $this->tag_id
+        ];
+
+        return $this->postsTagsModel->insertMultiple($data);
+    }
 
 	public function popErrors()
     {
@@ -154,7 +186,6 @@ class PostsModel extends Model
     {
         if (!empty($this->category_id))
         {
-            $this->loadModel('categories');
             $this->category = $this->categoriesModel->findById($this->category_id, ['values' => 'name']);
         }
 
@@ -165,5 +196,6 @@ class PostsModel extends Model
         {
             $this->tags = implode(', ', $this->tags);
         }
+		
     }
 }

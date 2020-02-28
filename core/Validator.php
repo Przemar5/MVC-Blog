@@ -25,20 +25,43 @@ class Validator
 				{
 					if (method_exists($this, $method))
 					{
-						$args = (!empty($params['args'])) 
-							? array_merge([$data[$field]], $params['args']) : [$data[$field]];
-						
-						if (!call_user_func_array([$this, $method], $args))
-						{
-						    $this->_passed = false;
+					    if (is_array($data) || is_object($data))
+                        {
+                            $args = (!empty($params['args']))
+                                ? array_merge([$data[$field]], $params['args']) : [$data[$field]];
 
-						    if ($msgs)
+                            foreach ($args as $arg)
                             {
-                                $this->setError($field, $params['msg']);
-                            }
+                                if (!call_user_func_array([$this, $method], $args))
+                                {
+                                    $this->_passed = false;
 
-							break 1;
-						}
+                                    if ($msgs)
+                                    {
+                                        $this->setError($field, $params['msg']);
+                                    }
+
+                                    break 2;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            $args = (!empty($params['args']))
+                                ? array_merge([$data[$field]], $params['args']) : [$data[$field]];
+
+                            if (!call_user_func_array([$this, $method], $args))
+                            {
+                                $this->_passed = false;
+
+                                if ($msgs)
+                                {
+                                    $this->setError($field, $params['msg']);
+                                }
+
+                                break 1;
+                            }
+                        }
 					}
 				}
 			}

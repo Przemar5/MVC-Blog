@@ -59,6 +59,13 @@ class HTML
         return $html;
     }
 
+    public static function multiselect($inputData)
+    {
+        $inputData['multiple'] = 'multiple';
+
+        return self::select($inputData);
+    }
+
     public static function block($type, $inputData, $blockData)
     {
         $blockText = self::pop($blockData['text']);
@@ -103,6 +110,11 @@ class HTML
         return self::block('select', $inputData, $blockData);
     }
 
+	public static function multiselectBlock($inputData, $blockData)
+    {
+        return self::block('multiselect', $inputData, $blockData);
+    }
+
 	public static function errors($errors)
     {
         $result = '';
@@ -131,15 +143,6 @@ class HTML
         $html .= '<li class="page-item">';
         $html .= '<a class="page-link" href="#" tabindex="-1">Previous</a>';
         $html .= '</li>';
-
-//    <li class="page-item"><a class="page-link" href="#">1</a></li>
-//    <li class="page-item active">
-//      <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
-//    </li>
-//    <li class="page-item"><a class="page-link" href="#">3</a></li>
-//    <li class="page-item">
-//      <a class="page-link" href="#">Next</a>
-//    </li>
 
         for ($i = 1; $i <= $tabs; $i++)
         {

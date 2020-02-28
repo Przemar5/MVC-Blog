@@ -37,6 +37,87 @@ class Database
         return self::$_instance;
     }
 
+    public function insertMultiple($table, $params = [])
+    {
+        $fieldsString = '';
+        $valuesString = '';
+
+        // Determine array key name
+        $valuesNum = 0;
+
+        foreach ($params as $key => $value)
+        {
+            if (empty($value))
+            {
+                return;
+            }
+
+            $fieldsString .= "`$key`,";
+
+            if (is_array($value) || is_object($value))
+            {
+                if (isset($array))
+                {
+                    return false;
+                }
+                $array = $key;
+                $length = count($params[$key]);
+            }
+
+            $valuesNum++;
+        }
+
+        for ($i = 0; $i < $length; $i++)
+        {
+            $valuesString .= '(';
+
+            for ($j = 0; $j < $valuesNum; $j++)
+            {
+                $valuesString .= '?, ';
+            }
+
+            $valuesString = rtrim($valuesString, ', ');
+            $valuesString .= '), ';
+        }
+
+        $fieldsString = rtrim($fieldsString, ', ');
+        $valuesString = rtrim($valuesString, ', ');
+
+        $sql = 'INSERT INTO ' . $table . ' (' . $fieldsString . ') VALUES ' . $valuesString . ';';
+
+        echo $sql;die;
+        $c = 1;
+        if ($this->_query = $this->_pdo->prepare($sql))
+        {
+            for ($i = 0; $i < $length; $i++)
+            {
+                foreach ($params as $key => $value)
+                {
+                    if ($key == $array)
+                    {
+                        $this->_query->bindValue($c, $value[$i]);
+                    }
+                    else
+                    {
+                        $this->_query->bindValue($c, $value);
+                    }
+                    $c++;
+                }
+            }
+
+            if ($this->_query->execute())
+            {
+                return true;
+            }
+            else
+            {
+                $this->_error = true;
+            }
+        }
+
+        return false;
+    }
+
     public function query($sql, $params = [], $class = false)
     {
         $this->_error = false;
@@ -291,7 +372,7 @@ class Database
         return $this->_count;
     }
 
-    public function lastID()
+    public function lastInsertId()
     {
         return $this->_lastInsertId;
     }

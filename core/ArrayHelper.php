@@ -7,7 +7,7 @@ class ArrayHelper
     {
         $result = [];
 
-        if (!empty($array) && count($array))
+        if (!empty($array))
         {
             foreach ($array as $key => $value)
             {

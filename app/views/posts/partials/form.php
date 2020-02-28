@@ -8,8 +8,12 @@
     <?= HTML::selectBlock(['id' => 'category_id', 'name' => 'category_id', 'class'  => 'form-control', 'data' => $this->categories,
         'options' => ['value' => 'id', 'text' => 'name']],
         ['text' => 'Category', 'class' => 'form-group']); ?>
-    <?= HTML::inputBlock(['type' => 'text', 'id' => 'tags', 'name' => 'tags', 'value' => $this->post->tags, 'class' => 'form-control'],
+
+    <?= HTML::multiselectBlock(['type' => 'text', 'id' => 'tag_id', 'name' => 'tag_id[]', 'value' => $this->post->tags,
+        'data' => $this->tags, 'class' => 'form-control multiselect',
+        'options' => ['value' => 'id', 'text' => 'name']],
         ['text' => 'Tags', 'class' => 'form-group']); ?>
+
     <?= HTML::textareaBlock(['id' => 'body', 'name' => 'body', 'rows' => '10', 'text' => $this->post->body, 'class' => 'form-control'],
         ['text' => 'Post Body', 'class' => 'form-group']); ?>
     <?= HTML::submit(['value' => $this->submitButtonValue, 'class' => 'btn btn-block btn-primary']); ?>

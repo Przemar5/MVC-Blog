@@ -103,6 +103,11 @@ class Model
         return $this->_db->lastSelectId();
     }
 
+    public function lastInsertId()
+    {
+        return $this->_db->lastInsertId();
+    }
+
     public function count($params = [])
     {
         return $this->_db->selectCount($this->_table, $params);

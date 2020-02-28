@@ -17,7 +17,12 @@ class PostsTagsModel extends Model
     {
         $this->tagIds = $this->find(['values' => 'tag_id', 'conditions' => 'post_id = ?', 'bind' => [$postId]], true);
         $this->tagIds = ArrayHelper::flattenSingles($this->tagIds);
-        dd($this->tagIds);
+
         return $this->tagIds;
+    }
+
+    public function insertMultiple($data)
+    {
+        return $this->_db->insertMultiple($this->_table, $data);
     }
 }

@@ -111,12 +111,9 @@ class PostsController extends Controller
 
         if ($this->postsModel->check(true) && $this->postsModel->save())
         {
-            echo 'good';
             Session::set('last_action', 'You have updated post successfully.');
             Router::redirect('posts');
         }
-        echo 'bad';
-        die;
     }
 
     private function _preparePagination()
