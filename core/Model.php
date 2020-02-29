@@ -3,7 +3,7 @@
 
 class Model
 {
-    protected $_db, $_table, $_softDelete = true, $lastSelectId;
+    protected $_db, $_table, $_softDelete = true, $lastSelectId, $modelMediator;
 
     public function __construct($table)
     {

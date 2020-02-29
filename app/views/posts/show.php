@@ -24,4 +24,17 @@
     <p>
         <?= $this->post->body; ?>
     </p>
+    
+    <hr>
+    
+    <form action="" method="post">
+    	<?= HTML::inputBlock(['type' => 'text', 'id' => 'nick', 'name' => 'nick', 'class' => 'form-control'],
+			['text' => 'Nick', 'class' => 'form-group']); ?>
+		<?= HTML::inputBlock(['type' => 'email', 'id' => 'email', 'name' => 'email', 'class' => 'form-control'],
+			['text' => 'Email', 'class' => 'form-group']); ?>
+		<?= HTML::textareaBlock(['id' => 'message', 'name' => 'message', 'rows' => '10', 'class' => 'form-control'],
+			['text' => 'Comment', 'class' => 'form-group']); ?>
+		<?= HTML::submit(['value' => 'Create', 'class' => 'btn btn-block btn-primary']); ?>
+		<?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-default']); ?>
+    </form>
 </div>

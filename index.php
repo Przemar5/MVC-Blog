@@ -14,6 +14,7 @@ require_once 'core/Helper.php';
 require_once 'core/HTML.php';
 require_once 'core/Input.php';
 require_once 'core/Model.php';
+require_once 'core/ModelMediator.php';
 require_once 'core/Router.php';
 require_once 'core/Session.php';
 require_once 'core/Validator.php';

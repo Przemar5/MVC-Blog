@@ -26,7 +26,9 @@
             <?php foreach ($this->posts as $post): ?>
             <tr>
                 <td>
-                    <?= $post->id ?>
+                   	<a href="<?= URL . 'posts/show/' . $post->slug; ?>">
+                    	<?= $post->id ?>
+                    </a>
                 </td>
                 <td>
                     <?= $post->title ?>

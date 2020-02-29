@@ -40,4 +40,9 @@ class PostsCategoriesModel extends Model
         
 		return !$this->_db->query($sql, [$categoryId])->error();
 	}
+	
+	public function countPostsForCategory($categoryId)
+	{
+		return $this->count(['conditions' => 'category_id = ?', 'bind' => $categoryId]);
+	}
 }

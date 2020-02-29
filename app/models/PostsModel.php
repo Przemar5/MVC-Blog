@@ -113,7 +113,10 @@ class PostsModel extends Model
 
 		if (empty($this->tags))
 		{
-			$this->tags = $this->postsTagsModel->tagsForPost($this->id);
+//			$this->modelMediator = new ModelMediator;
+//			$this->tags = $this->postsTagsModel->tagsForPost($this->id);
+			$this->tags = ModelMediator::make('postsTags', 'tagsForPost', [$this->id]);
+//			$this->tags = $this->modelMediator->make('postsTags', 'tagsForPost', [$this->id]);
 		}
 		
 		return $this->tags;
