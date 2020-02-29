@@ -2,7 +2,7 @@
 
 <?php if (count($this->posts)): ?>
     <?php foreach ($this->posts as $post): ?>
-
+	
         <div class="container">
             <h3>
                 <a href="<?= URL . 'posts/show/' . $post->slug; ?>">
@@ -12,9 +12,14 @@
                 <small class="h6 d-inline italic ml-2">
                     <em>
                         <?= Helper::getDate($post->created_at); ?>
+                        in category '<?= $post->category->name; ?>'
                     </em>
                 </small>
             </h3>
+
+			<p>
+				<?= $post->tagsString; ?>
+			</p>
 
             <p>
                 <?= $post->body; ?>

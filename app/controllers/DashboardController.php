@@ -13,7 +13,7 @@ class DashboardController extends Controller
     public function index_action()
     {
         $this->view->posts = $this->postsModel->all([
-            'values' => ['id', 'title', 'slug', 'label', 'category_id',
+            'values' => ['id', 'title', 'slug', 'label',
                         'created_at', 'updated_at', 'deleted'],
             'order' => 'id DESC',
         ], true);
@@ -22,7 +22,7 @@ class DashboardController extends Controller
         {
             foreach ($this->view->posts as $post)
             {
-                $post->prepareData();
+                $post->prepareForDisplay();
             }
         }
 

@@ -3,7 +3,7 @@
 
 class CategoriesModel extends Model
 {
-    public $id, $name, $slug;
+    public $id, $name, $slug, $deleted;
 
     public function __construct()
     {

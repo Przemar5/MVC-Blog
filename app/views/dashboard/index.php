@@ -38,10 +38,10 @@
                     <?= $post->label ?>
                 </td>
                 <td>
-                    <?= $post->category ?>
+                    <?= $post->category->name ?>
                 </td>
                 <td>
-
+					<?= $post->tagsString ?>
                 </td>
                 <td>
                     <?= $post->created_at ?>
@@ -53,7 +53,8 @@
                     <?= $post->deleted ?>
                 </td>
                 <td>
-
+					<a href="<?= URL . 'posts/edit/' . $post->slug; ?>" class="btn btn-sm btn-primary">Edit</a>
+					<a href="<?= URL . 'posts/delete/' . $post->slug; ?>" class="btn btn-sm btn-danger">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>

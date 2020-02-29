@@ -3,8 +3,8 @@
 
 class PostsModel extends Model
 {
-    public $id, $label, $title, $slug, $category_id, $category = '', $tag_id = [],
-        $body, $user_id, $created_at, $updated_at, $deleted;
+    public $id, $label, $title, $slug, $category_id, $category = null, $tag_ids, $tags = [],
+			$tagsString = '', $body, $user_id, $created_at, $updated_at, $deleted;
 
     private $validationRules = [
         'title' => [
@@ -49,7 +49,6 @@ class PostsModel extends Model
         parent::__construct('posts');
 		
 		$this->loadModel('postsCategories');
-		$this->loadModel('categories');
 		$this->loadModel('postsTags');
     }
 
@@ -67,8 +66,8 @@ class PostsModel extends Model
             'label' => $this->label,
             'slug' => $this->slug,
             'category_id' => $this->category_id,
-            'tag_id' => $this->tag_id,
-            'body' => $this->body,
+            'tag_ids' => $this->tag_ids,
+			'body' => $this->body,
 			'user_id' => UsersModel::currentLoggedInUserId(),
         ], $this->validationRules);
 
@@ -83,36 +82,76 @@ class PostsModel extends Model
             return false;
         }
     }
+	
+	public function getAdditionalInfo()
+	{
+		$this->getCategory();
+		$this->getTags();
+	}
+	
+	private function getCategory()
+	{
+		if (empty($this->id))
+		{
+			return false;
+		}
+
+		if (empty($this->category))
+		{
+			$this->category = $this->postsCategoriesModel->categoryForPost($this->id);
+		}
+		
+		return $this->category;
+	}
+	
+	private function getTags()
+	{
+		if (empty($this->id))
+		{
+			return false;
+		}
+
+		if (empty($this->tags))
+		{
+			$this->tags = $this->postsTagsModel->tagsForPost($this->id);
+		}
+		
+		return $this->tags;
+	}
 
     public function findBySlug($slug, $values = '*')
     {
         $validation = new Validator;
-
-        if ($validation->check(['slug' => $slug], $this->validationRules['slug'], false))
+		
+        if (!$validation->check(['slug' => $slug], $this->validationRules['slug'], false))
         {
-            return $this->findFirst([
-                'values' => $values,
-                'conditions' => ['slug' => $slug]
-            ]);
+			return false;
         }
-        return false;
+		
+		$dataToFind = [
+			'values' => $values,
+			'conditions' => ['slug' => $slug]
+		];
+		
+		if (!$post = $this->findFirst($dataToFind))
+		{
+			return false;
+		}
+		
+		$post->getAdditionalInfo();
+		
+		return $post;
     }
 	
 	public function save()
 	{
 	    if ($this->id)
 		{
-			return $this->update($this->id, [
-				'title' => $this->title,
-				'label' => $this->label,
-				'slug' => $this->slug,
-				'body' => $this->body,
-				'updated_at' => Helper::currentTimestamp(),
-			]);
+			$this->updatePost();
 		}
 		else
 		{
-        $this->insertPost();
+        	$this->insertPost();
 		}
 	}
 
@@ -124,12 +163,11 @@ class PostsModel extends Model
             'slug' => $this->slug,
             'body' => $this->body,
             'user_id' => UsersModel::currentLoggedInUserId(),
-            'created_at' => 'NOW()'
         ];
 
         if (!$this->insert($data))
         {
-            return false;
+           	return false;
         }
 
         $lastPostId = $this->lastInsertId();
@@ -146,11 +184,44 @@ class PostsModel extends Model
 
         $data = [
             'post_id' => $lastPostId,
-            'tag_id' => $this->tag_id
+            'tag_id' => $this->tag_ids
         ];
-
+		
         return $this->postsTagsModel->insertMultiple($data);
     }
+	
+	private function updatePost()
+	{
+		$postToEdit = $this->findById($this->id);
+		
+		$data = [
+			'title' => $this->title,
+			'label' => $this->label,
+			'slug' => $this->slug,
+			'body' => $this->body,
+			'updated_at' => date('Y-m-d H:i:s'),
+		];
+		
+		if (!$this->update($this->id, $data))
+		{
+			return false;
+		}
+		
+		if (!$this->postsCategoriesModel->updateCategoryForPost($this->id, $this->category_id))
+		{
+			return false;
+		}
+		
+		if (!$this->postsTagsModel->deleteForPost($this->id, $this->category_id))
+		{
+			return false;
+		}
+		
+		if (!$this->postsTagsModel->insertMultiple(['post_id' => $this->id, 'tag_id' => $this->tag_ids]))
+		{
+			return false;
+		}
+	}
 
 	public function popErrors()
     {
@@ -175,27 +246,41 @@ class PostsModel extends Model
         }
     }
 
+    public function prepareForDisplay()
+    {
+		$this->prepareTagIds();
+		$this->prepareTagsString();
+    }
+
     public function getIds()
     {
         $result = $this->all(['values' => 'id', 'order' => 'id DESC']);
 
         return ArrayHelper::flattenSingles($result);
     }
-
-    public function prepareData()
-    {
-        if (!empty($this->category_id))
-        {
-            $this->category = $this->categoriesModel->findById($this->category_id, ['values' => 'name']);
-        }
-
-        $this->loadModel('postsTags');
-        $this->tags = $this->postsTagsModel->tagNamesForPost($this->id);
-
-        if (!empty($this->tags))
-        {
-            $this->tags = implode(', ', $this->tags);
-        }
+	
+	public function prepareTagIds()
+	{
+		if (!isset($this->tag_ids))
+		{
+			$this->tag_ids = ArrayHelper::flattenSingles($this->postsTagsModel->find(['values' => 'tag_id', 'conditions' => 'post_id = ?', 'bind' => [$this->id]], false));
+		}
 		
-    }
+		return $this->tag_ids;
+	}
+	
+	public function prepareTagsString()
+	{
+		$tmp = '';
+		
+		if (!empty($this->tags) && $this->tags[0] instanceof TagsModel)
+		{
+			foreach ($this->tags as $tag)
+			{
+				$tmp .= $tag->prepareForDisplay() . ' ';
+			}
+		}
+		
+		$this->tagsString = rtrim($tmp, ' ');
+	}
 }

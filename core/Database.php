@@ -85,7 +85,6 @@ class Database
 
         $sql = 'INSERT INTO ' . $table . ' (' . $fieldsString . ') VALUES ' . $valuesString . ';';
 
-        echo $sql;die;
         $c = 1;
         if ($this->_query = $this->_pdo->prepare($sql))
         {

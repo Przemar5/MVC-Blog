@@ -3,7 +3,7 @@
 
 class PostsCategoriesModel extends Model
 {
-    public $post_id, $category_id;
+    public $id, $post_id, $category_id;
 	
 	private $validationRules = [
         'category_id' => [
@@ -21,11 +21,23 @@ class PostsCategoriesModel extends Model
         $this->loadModel('categories');
     }
 
-    public function categoryForPost($postId)
+    public function categoryForPost($postId, $class = true)
     {
-        $this->categories = $this->find(['values' => 'category_id', 'conditions' => 'post_id = ?', 'bind' => [$postId]], true);
-        $this->categories = ArrayHelper::flattenSingles($this->categories);
-//        dd($this->tagIds);
-        return $this->categories;
+        $this->category_id = $this->findFirst(['values' => 'category_id', 'conditions' => 'post_id = ?', 'bind' => [$postId]], false);
+		$this->category_id = ArrayHelper::flattenSingles($this->category_id);
+		
+		return $this->categoriesModel->findById($this->category_id);
     }
+	
+	public function updateCategoryForPost($postId, $categoryId)
+	{
+		if (empty($postId) || empty($categoryId))
+        {
+            return false;
+        }
+		
+		$sql = 'UPDATE ' . $this->_table . ' SET category_id = ' . $categoryId . ' WHERE post_id = ' . $postId;
+        
+		return !$this->_db->query($sql, [$categoryId])->error();
+	}
 }

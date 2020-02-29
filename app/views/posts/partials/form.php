@@ -5,15 +5,12 @@
         ['text' => 'Label', 'class' => 'form-group']); ?>
     <?= HTML::inputBlock(['type' => 'text', 'id' => 'slug', 'name' => 'slug', 'value' => $this->post->slug, 'class' => 'form-control'],
         ['text' => 'Slug', 'class' => 'form-group']); ?>
-    <?= HTML::selectBlock(['id' => 'category_id', 'name' => 'category_id', 'class'  => 'form-control', 'data' => $this->categories,
-        'options' => ['value' => 'id', 'text' => 'name']],
+    <?= HTML::selectBlock(['id' => 'category_id', 'name' => 'category_id', 'class'  => 'form-control', 'data' => $this->categories, 
+		'selected' => $this->post->category->id, 'options' => ['value' => 'id', 'text' => 'name']],
         ['text' => 'Category', 'class' => 'form-group']); ?>
-
-    <?= HTML::multiselectBlock(['type' => 'text', 'id' => 'tag_id', 'name' => 'tag_id[]', 'value' => $this->post->tags,
-        'data' => $this->tags, 'class' => 'form-control multiselect',
-        'options' => ['value' => 'id', 'text' => 'name']],
+    <?= HTML::multiselectBlock(['type' => 'text', 'id' => 'tag_ids', 'name' => 'tag_ids[]', 'selected' => $this->post->tag_ids,
+        'data' => $this->tags, 'class' => 'form-control multiselect', 'options' => ['value' => 'id', 'text' => 'name']],
         ['text' => 'Tags', 'class' => 'form-group']); ?>
-
     <?= HTML::textareaBlock(['id' => 'body', 'name' => 'body', 'rows' => '10', 'text' => $this->post->body, 'class' => 'form-control'],
         ['text' => 'Post Body', 'class' => 'form-group']); ?>
     <?= HTML::submit(['value' => $this->submitButtonValue, 'class' => 'btn btn-block btn-primary']); ?>

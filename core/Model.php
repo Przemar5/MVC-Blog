@@ -26,43 +26,101 @@ class Model
 
     public function populate($data, $values = [])
     {
-        foreach ($data as $key => $value)
-        {
-            if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
-            {
-                $this->{$key} = $value;
-            }
-        }
+		if (!empty($data) && count($data))
+		{
+			foreach ($data as $key => $value)
+			{
+				if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
+				{
+					$this->{$key} = $value;
+				}
+			}
+		}
 		
 		return $this;
     }
 
-    public function find($params = [])
+    public function find($params = [], $class = true, $additionalInfo = true)
     {
-        return (array) $this->_db->find($this->_table, $params, get_class($this));
+		$class = ($class) ? get_class($this) : false;
+		
+		$result = (array) $this->_db->find($this->_table, $params, $class);
+		
+		if ($additionalInfo)
+		{
+			if (!empty($result))
+			{
+				$class = get_class($this);
+
+				if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+				{
+					foreach ($result as $row)
+					{
+						$row->getAdditionalInfo();
+					}
+				}
+			}
+		}
+		
+        return $result;
     }
 
-    public function findFirst($params = [])
+    public function findFirst($params = [], $class = true, $additionalInfo = true)
     {
-        return $this->_db->findFirst($this->_table, $params, get_class($this));
+		$class = ($class) ? get_class($this) : false;
+		
+		$result = $this->_db->findFirst($this->_table, $params, $class);
+		
+		if ($additionalInfo)
+		{
+			if (!empty($result))
+			{
+				if ($class && method_exists($this, 'getAdditionalInfo'))
+				{
+					$result->getAdditionalInfo();
+				}
+			}
+		}
+		
+        return $result;
     }
 
-    public function findById($id, $params = [])
+    public function findById($id, $params = [], $class = true, $additionalInfo = true)
     {
+		$class = ($class) ? get_class($this) : false;
+		
         $params['conditions'] = 'id = ? ';
         $params['bind'] = [$id];
 
-        return $this->findFirst($params);
+        return $this->findFirst($params, $class, $additionalInfo);
     }
 
-    public function all($values = [], $class = false)
+    public function all($values = [], $class = false, $additionalInfo = true)
     {
         $class = ($class) ? get_class($this) : false;
 
-        return $this->_db->all($this->_table, $values, $class);
+        $result = $this->_db->all($this->_table, $values, $class);
+		
+		if ($additionalInfo)
+		{
+			if (!empty($result))
+			{ 
+				$class = get_class($this);
+
+				if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+				{
+					foreach ($result as $row)
+					{
+						$row->getAdditionalInfo();
+					}
+				}
+			}
+		}
+		
+		return $result;
     }
 
-    public function last($amount = 1, $params = [])
+    public function last($amount = 1, $params = [], $additionalInfo = true)
     {
         if (is_numeric($amount))
         {
@@ -72,12 +130,25 @@ class Model
             $result = $this->find($params);
             $this->lastSelectId = $this->_db->lastSelectID();
 
+			if ($additionalInfo)
+			{
+				if (!empty($result))
+				{ 
+					$class = get_class($result);
+
+					if ($result instanceof $class && method_exists($this, 'getAdditionalInfo'))
+					{
+						$result->getAdditionalInfo();
+					}
+				}
+			}
+			
             return $result;
         }
         return [];
     }
 
-    public function lastFrom($amount = 1, $from = 0, $params = [])
+    public function lastFrom($amount = 1, $from = 0, $params = [], $additionalInfo = true)
     {
         if (is_numeric($amount))
         {
@@ -88,6 +159,22 @@ class Model
             $result = $this->find($params);
             $this->lastSelectId = $this->_db->lastSelectId();
 
+			if ($additionalInfo)
+			{
+				if (!empty($result))
+				{ 
+					$class = get_class($this);
+
+					if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+					{
+						foreach ($result as $row)
+						{
+							$row->getAdditionalInfo();
+						}
+					}
+				}
+			}
+			
             return $result;
         }
         return [];
@@ -144,6 +231,7 @@ class Model
         {
             return $this->update($id, ['deleted' => 1]);
         }
+		
         return $this->_db->delete($this->_table, $id);
     }
 
@@ -151,4 +239,24 @@ class Model
     {
         return $this->_db->query($sql, $bind);
     }
+	
+	public function compare($data)
+	{
+		$theSame = [];
+		
+		foreach ($data as $property => $value)
+		{
+			if (property_exists($this, $property) && $this->{$property} == $value)
+			{
+				$theSame[] = $property;
+			}
+		}
+		
+		return $theSame;
+	}
+	
+	public function debugDumpParams()
+	{
+		$this->_db->debugDumpParams();
+	}
 }

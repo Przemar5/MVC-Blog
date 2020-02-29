@@ -3,7 +3,7 @@
 
 class PostsTagsModel extends Model
 {
-    public $tagIds;
+    public $tag_ids = [];
 
     public function __construct()
     {
@@ -11,6 +11,28 @@ class PostsTagsModel extends Model
 
         $this->loadModel('posts_tags');
         $this->loadModel('tags');
+    }
+
+    public function tagsForPost($postId)
+    {
+        $this->tag_ids = $this->find(['values' => 'tag_id', 'conditions' => 'post_id = ?', 'bind' => [$postId]], false);
+        $this->tag_ids = ArrayHelper::flattenSingles($this->tag_ids);
+		
+		if (empty($this->tag_ids))
+		{
+			return true;
+		}
+		
+		$length = count($this->tag_ids);
+		
+		for ($i = 0; $i < $length; $i++)
+		{
+			$conditions[$i] = ' id = ?';
+		}
+		
+		$conditions = implode(' OR ', $conditions);
+		
+		return $this->tagsModel->find(['conditions' => $conditions, 'bind' => $this->tag_ids], true);
     }
 
     public function tagNamesForPost($postId)
@@ -25,4 +47,11 @@ class PostsTagsModel extends Model
     {
         return $this->_db->insertMultiple($this->_table, $data);
     }
+	
+	public function deleteForPost($postId)
+	{
+		$sql = 'DELETE FROM ' . $this->_table . ' WHERE post_id = ?';
+		
+		return !$this->_db->query($sql, [$postId])->error();
+	}
 }

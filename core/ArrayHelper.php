@@ -28,4 +28,10 @@ class ArrayHelper
 
         return $result;
     }
+	
+	public static function selectProperty($data, $property)
+	{
+		dd($data);
+		echo 'good';die;
+	}
 }

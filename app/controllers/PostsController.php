@@ -26,6 +26,11 @@ class PostsController extends Controller
             foreach ($this->view->posts as $post)
             {
                 $post->truncateText(600);
+				
+				if ($post->tags)
+				{
+					$post->prepareForDisplay();
+				}
             }
         }
 
@@ -40,6 +45,11 @@ class PostsController extends Controller
         {
             Router::redirect(URL . 'posts');
         }
+		
+		if ($this->view->post->tags)
+		{
+			$this->view->post->prepareForDisplay();
+		}
 
         $this->view->render('posts/show');
     }
@@ -73,6 +83,7 @@ class PostsController extends Controller
 		}
 
         $this->view->submitButtonValue = 'Edit';
+		$this->view->post->prepareTagIds();
         $this->view->categories = $this->categoriesModel->all();
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/edit');
@@ -105,10 +116,9 @@ class PostsController extends Controller
     private function _verifyUpdated($slug)
     {
 		$post = $this->postsModel->findBySlug($slug);
-		
         $this->postsModel->populate($post, ['id', 'user_id']);
         $this->postsModel->populate($_POST);
-
+		
         if ($this->postsModel->check(true) && $this->postsModel->save())
         {
             Session::set('last_action', 'You have updated post successfully.');

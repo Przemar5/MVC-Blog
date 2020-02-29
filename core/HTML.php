@@ -44,18 +44,33 @@ class HTML
 
         $data = self::pop($inputData['data']);
         unset($inputData['data']);
-
+		
+		$selected = self::pop($inputData['selected']);
+		unset($inputData['selected']);
+		
         $attrs = self::stringifyAttrs($inputData);
 
         $html = '<select' . $attrs . '>';
 
-        foreach ($data as $params)
-        {
-            $html .= '<option value="' . $params->{$options['value']} . '">' . $params->{$options['text']} . '</option>';
-        }
+		if (is_array($data) && count($data))
+		{
+			foreach ($data as $params)
+			{
+				if (is_array($selected))
+				{
+					$selectString = (in_array($params->{$options['value']}, $selected)) ? 'selected' : '';
+				}
+				else
+				{
+					$selectString = ($selected == $params->{$options['value']}) ? 'selected' : '';
+				}
+				
+				$html .= '<option value="' . $params->{$options['value']} . '"' . $selectString . '>' . $params->{$options['text']} . '</option>';
+			}
+		}
 
         $html .= '</select>';
-
+		
         return $html;
     }
 

@@ -7,6 +7,7 @@
         <small class="h6 d-inline italic ml-2">
             <em>
                 <?= Helper::getDate($this->post->created_at); ?>
+                in category '<?= $this->post->category->name; ?>'
             </em>
         </small>
         
@@ -16,6 +17,10 @@
         </div>
     </h2>
 
+   	<p>
+   		<?= $this->post->tagsString; ?>
+   	</p>
+   	
     <p>
         <?= $this->post->body; ?>
     </p>
