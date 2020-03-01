@@ -134,7 +134,7 @@ class HTML
     {
         $result = '';
 
-        if ($errors && count($errors))
+        if (!empty($errors) && count($errors))
         {
             $result .= '<div class="p-3 mb-3">';
 

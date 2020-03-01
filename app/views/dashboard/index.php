@@ -1,4 +1,4 @@
-<?php $this->setSiteTitle('Home'); ?>
+<?php $this->setSiteTitle('Dashboard'); ?>
 <?php $this->start('head'); ?>
 <?php $this->end(); ?>
 

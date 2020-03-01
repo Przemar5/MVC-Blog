@@ -1,5 +1,9 @@
 <?php $this->setSiteTitle($this->post->label); ?>
+<?php $this->start('head'); ?>
 
+<?php $this->end(); ?>
+
+<?php $this->start('body'); ?>
 <div class="container my-5">
     <h2 class="mb-4">
         <?= $this->post->title; ?>
@@ -27,7 +31,7 @@
     
     <hr>
     
-    <form action="" method="post">
+    <form method="post">
     	<?= HTML::inputBlock(['type' => 'text', 'id' => 'nick', 'name' => 'nick', 'class' => 'form-control'],
 			['text' => 'Nick', 'class' => 'form-group']); ?>
 		<?= HTML::inputBlock(['type' => 'email', 'id' => 'email', 'name' => 'email', 'class' => 'form-control'],
@@ -35,6 +39,8 @@
 		<?= HTML::textareaBlock(['id' => 'message', 'name' => 'message', 'rows' => '10', 'class' => 'form-control'],
 			['text' => 'Comment', 'class' => 'form-group']); ?>
 		<?= HTML::submit(['value' => 'Create', 'class' => 'btn btn-block btn-primary']); ?>
-		<?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-default']); ?>
+		<?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-danger']); ?>
     </form>
 </div>
+
+<?php $this->end(); ?>

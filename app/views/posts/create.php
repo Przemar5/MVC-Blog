@@ -1,3 +1,9 @@
+<?php $this->setSiteTitle('Create Post'); ?>
+<?php $this->start('head'); ?>
+
+<?php $this->end(); ?>
+
+<?php $this->start('body'); ?>
 
 <div class="container my-5">
     <div class="col-md-10 offset-md-1 card px-3 py-4 shadow">
@@ -10,3 +16,5 @@
         </div>
     </div>
 </div>
+
+<?php $this->end(); ?>

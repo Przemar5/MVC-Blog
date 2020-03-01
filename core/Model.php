@@ -46,20 +46,17 @@ class Model
 		
 		$result = (array) $this->_db->find($this->_table, $params, $class);
 		
-		if ($additionalInfo)
+		if ($additionalInfo && !empty($result))
 		{
-			if (!empty($result))
-			{
-				$class = get_class($this);
-
-				if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
-				{
-					foreach ($result as $row)
-					{
-						$row->getAdditionalInfo();
-					}
-				}
-			}
+//			$class = get_class($this);
+//
+//			if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+//			{
+//				foreach ($result as $row)
+//				{
+//					$row->getAdditionalInfo();
+//				}
+//			}
 		}
 		
         return $result;
@@ -120,27 +117,27 @@ class Model
 		return $result;
     }
 
-    public function last($amount = 1, $params = [], $additionalInfo = true)
+    public function last($amount = 1, $params = [], $class = true, $additionalInfo = true)
     {
         if (is_numeric($amount))
         {
             $params['limit'] = $amount;
             $params['order'] = ' id DESC';
 
-            $result = $this->find($params);
+            $result = $this->find($params, $class);
             $this->lastSelectId = $this->_db->lastSelectID();
 
 			if ($additionalInfo)
 			{
-				if (!empty($result))
-				{ 
-					$class = get_class($result);
-
-					if ($result instanceof $class && method_exists($this, 'getAdditionalInfo'))
-					{
-						$result->getAdditionalInfo();
-					}
-				}
+//				if (!empty($result))
+//				{ 
+//					$class = get_class($result);
+//
+//					if ($result instanceof $class && method_exists($this, 'getAdditionalInfo'))
+//					{
+//						$result->getAdditionalInfo();
+//					}
+//				}
 			}
 			
             return $result;
@@ -148,24 +145,39 @@ class Model
         return [];
     }
 
-    public function lastFrom($amount = 1, $from = 0, $params = [], $additionalInfo = true)
+    public function lastFrom($amount = 1, $from = 0, $params = [], $class = true, $additionalInfo = true)
     {
         if (is_numeric($amount))
         {
-            $params['conditions'] = 'id <= ' . $from;
+			if (!empty($params['conditions']))
+			{
+				$params['conditions'] = '(' . $params['conditions'] . ') AND id <= ' . (string) $from;
+			}
+			else
+			{
+            	$params['conditions'] = (!empty($from)) ? 'id <= ' . (string) $from : '';
+			}
+
             $params['limit'] = $amount;
             $params['order'] = ' id DESC';
 
-            $result = $this->find($params);
+            $result = $this->find($params, $class);
+			
             $this->lastSelectId = $this->_db->lastSelectId();
-
+			
 			if ($additionalInfo)
 			{
 				if (!empty($result))
 				{ 
-					$class = get_class($this);
+					$isClassObject = true;
+					
+					if ($class)
+					{
+						$class = get_class($this);
+						$isClassObject = $result[0] instanceof $class;
+					}
 
-					if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+					if ($isClassObject && method_exists($this, 'getAdditionalInfo'))
 					{
 						foreach ($result as $row)
 						{

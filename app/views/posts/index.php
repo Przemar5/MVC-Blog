@@ -1,40 +1,11 @@
+<?php $this->setSiteTitle('Posts'); ?>
+<?php $this->start('head'); ?>
+
+<?php $this->end(); ?>
+
+<?php $this->start('body'); ?>
 <h1>Blog</h1>
 
-<?php if (count($this->posts)): ?>
-    <?php foreach ($this->posts as $post): ?>
-	
-        <div class="container">
-            <h3>
-                <a href="<?= URL . 'posts/show/' . $post->slug; ?>">
-                    <?= $post->title; ?>
-                </a>
+<?php $this->partial('posts', 'posts'); ?>
 
-                <small class="h6 d-inline italic ml-2">
-                    <em>
-                        <?= Helper::getDate($post->created_at); ?>
-                        in category '<?= $post->category->name; ?>'
-                    </em>
-                </small>
-            </h3>
-
-			<p>
-				<?= $post->tagsString; ?>
-			</p>
-
-            <p>
-                <?= $post->body; ?>
-            </p>
-
-            <a href="<?= URL . 'posts/show/' . $post->slug; ?>" class="text-primary pull-right">
-                Read More
-            </a>
-        </div>
-
-    <?php endforeach; ?>
-<?php else: ?>
-
-<h4>There are no posts yet. Create some!</h4>
-
-<?php endif; ?>
-
-<?= $this->pagination; ?>
+<?php $this->end(); ?>

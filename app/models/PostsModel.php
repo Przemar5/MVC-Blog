@@ -42,14 +42,24 @@ class PostsModel extends Model
 		]
     ];
     private $formValues = ['title', 'label', 'slug', 'category_id', 'tags', 'body', 'user_id'];
-
+	private $dependencies = [
+		'posts_tags' => [
+			'key' => ['id', 'post_id'],
+			'select' => ['select'],
+			'update' => ['delete', 'insert'],
+			'delete' => ['delete'],
+		], 
+		'posts_categories' => [
+			'key' => ['id', 'post_id'],
+			'select' => ['select'],
+			'update' => ['delete', 'insert'],
+			'delete' => ['delete'],
+		]
+	];
 
     public function __construct()
     {
         parent::__construct('posts');
-		
-		$this->loadModel('postsCategories');
-		$this->loadModel('postsTags');
     }
 
     public function check($update = false)
@@ -98,7 +108,7 @@ class PostsModel extends Model
 
 		if (empty($this->category))
 		{
-			$this->category = $this->postsCategoriesModel->categoryForPost($this->id);
+			$this->category = ModelMediator::make('postsCategories', 'categoryForPost', [$this->id]);
 		}
 		
 		return $this->category;
@@ -113,10 +123,7 @@ class PostsModel extends Model
 
 		if (empty($this->tags))
 		{
-//			$this->modelMediator = new ModelMediator;
-//			$this->tags = $this->postsTagsModel->tagsForPost($this->id);
 			$this->tags = ModelMediator::make('postsTags', 'tagsForPost', [$this->id]);
-//			$this->tags = $this->modelMediator->make('postsTags', 'tagsForPost', [$this->id]);
 		}
 		
 		return $this->tags;
@@ -145,6 +152,24 @@ class PostsModel extends Model
 		
 		return $post;
     }
+	
+	public function lastFromByCategoryId($limit, $offset, $categoryId, $params = [])
+	{
+		$post_ids = ModelMediator::make('postsCategories', 'postIdsForCategoryId', [$categoryId, 'post_id DESC']);
+		$params['conditions'] = Helper::repeatString(' id = ?', count($post_ids), ' OR');
+		$params['bind'] = $post_ids;
+		
+		return $this->lastFrom($limit, $offset, $params);
+	}
+	
+	public function lastFromByCategorySlug($limit, $offset, $slug, $params = [])
+	{
+		$category_id = ModelMediator::make('categories', 'idBySlug', [$slug]);
+		$post_ids = ModelMediator::make('postsCategories', 'postIdsByCategoryId', [$category_id]);
+		$params['conditions'] = Helper::repeatString(' id = ?', count($post_ids), ' OR');
+		
+		return $this->lastFrom($limit, $offset, $params);
+	}
 	
 	public function save()
 	{
@@ -175,12 +200,12 @@ class PostsModel extends Model
 
         $lastPostId = $this->lastInsertId();
 
-        $data = [
+		$data = [
             'post_id' => $lastPostId,
             'category_id' => $this->category_id
         ];
 
-        if (!$this->postsCategoriesModel->insert($data))
+        if (!ModelMediator::make('postsCategories', 'insert', [$data]))
         {
             return false;
         }
@@ -190,7 +215,7 @@ class PostsModel extends Model
             'tag_id' => $this->tag_ids
         ];
 		
-        return $this->postsTagsModel->insertMultiple($data);
+        return ModelMediator::make('postsTags', 'insertMultiple', [$data]);
     }
 	
 	private function updatePost()
@@ -210,20 +235,22 @@ class PostsModel extends Model
 			return false;
 		}
 		
-		if (!$this->postsCategoriesModel->updateCategoryForPost($this->id, $this->category_id))
+		if (!ModelMediator::make('postsCategories', 'updateCategoryForPost', [$this->id, $this->category_id]))
 		{
 			return false;
 		}
 		
-		if (!$this->postsTagsModel->deleteForPost($this->id, $this->category_id))
+		if (!ModelMediator::make('postsTags', 'deleteForPost', [$this->id, $this->category_id]))
 		{
 			return false;
 		}
 		
-		if (!$this->postsTagsModel->insertMultiple(['post_id' => $this->id, 'tag_id' => $this->tag_ids]))
+		if (!ModelMediator::make('postsTags', 'insertMultiple', [['post_id' => $this->id, 'tag_id' => $this->tag_ids]]))
 		{
 			return false;
 		}
+		
+		return true;
 	}
 
 	public function popErrors()
@@ -255,9 +282,12 @@ class PostsModel extends Model
 		$this->prepareTagsString();
     }
 
-    public function getIds()
+    public function getIds($params = [])
     {
-        $result = $this->all(['values' => 'id', 'order' => 'id DESC']);
+		$params['values'] = 'id';
+		$params['order'] = 'id DESC';
+		
+        $result = $this->all($params);
 
         return ArrayHelper::flattenSingles($result);
     }
@@ -266,7 +296,11 @@ class PostsModel extends Model
 	{
 		if (!isset($this->tag_ids))
 		{
-			$this->tag_ids = ArrayHelper::flattenSingles($this->postsTagsModel->find(['values' => 'tag_id', 'conditions' => 'post_id = ?', 'bind' => [$this->id]], false));
+			$this->tag_ids = ArrayHelper::flattenSingles(
+				ModelMediator::make('postsTags', 'find', 
+									[['values' => 'tag_id', 
+									  'conditions' => 'post_id = ?', 
+									  'bind' => [$this->id]], false]));
 		}
 		
 		return $this->tag_ids;

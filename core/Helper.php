@@ -52,4 +52,31 @@ class Helper
 
         return $result;
     }
+	
+	public static function repeatString($pattern, $number = 1, $glue = '')
+	{
+		$result = '';
+		
+		if (!empty($number) && is_integer($number))
+		{
+			while ($number-- > 0)
+			{
+				$result .= $pattern;
+				
+				if ($number > 1)
+				{
+					$result .= $glue;
+				}
+			}
+			
+			return $result;
+		}
+	}
+	
+	public static function actualUrl()
+	{
+		$string = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+		
+		return substr($string, 0, strpos($string, '?'));
+	}
 }

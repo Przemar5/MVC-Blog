@@ -8,9 +8,6 @@ class PostsTagsModel extends Model
     public function __construct()
     {
         parent::__construct('posts_tags');
-
-        $this->loadModel('posts_tags');
-        $this->loadModel('tags');
     }
 
     public function tagsForPost($postId)
@@ -32,8 +29,9 @@ class PostsTagsModel extends Model
 		
 		$conditions = implode(' OR ', $conditions);
 		
-		return $this->tagsModel->find(['conditions' => $conditions, 'bind' => $this->tag_ids], true);
-    }
+		return ModelMediator::make('tags', 'find', [['conditions' => $conditions, 'bind' => $this->tag_ids], true]);
+    
+	}
 
     public function tagNamesForPost($postId)
     {

@@ -10,7 +10,7 @@ class PostsController extends Controller
 	{
 		parent::__construct();
 
-		$this->loadModels(['posts', 'categories', 'tags', 'users']);
+		$this->loadModels(['posts', 'categories', 'postsCategories', 'tags', 'users']);
 	}
 	
 	public function index_action()
@@ -21,36 +21,20 @@ class PostsController extends Controller
 	    $this->view->pagination = $this->_preparePagination();
         $this->postsModel->lastSelectId();
 
-        if (count($this->view->posts))
-        {
-            foreach ($this->view->posts as $post)
-            {
-                $post->truncateText(600);
-				
-				if ($post->tags)
-				{
-					$post->prepareForDisplay();
-				}
-            }
-        }
+		ArrayHelper::callMethod($this->view->posts, 'truncateText', [600]);
+		ArrayHelper::callMethod($this->view->posts, 'prepareForDisplay');
 
 		$this->view->render('posts/index');
 	}
 
 	public function show_action($slug)
     {
-        $this->view->post = $this->postsModel->findBySlug($slug);
-
-        if (!$this->view->post)
+        if (!$this->view->post = $this->postsModel->findBySlug($slug))
         {
             Router::redirect(URL . 'posts');
         }
 		
-		if ($this->view->post->tags)
-		{
-			$this->view->post->prepareForDisplay();
-		}
-
+		$this->view->post->prepareForDisplay();
         $this->view->render('posts/show');
     }
 
@@ -59,7 +43,7 @@ class PostsController extends Controller
         if (Input::isPost())
         {
             $this->_verifyCreated();
-            $this->view->errors = $this->postsModel->popErrors();
+            $this->view->errors = $this->postsModel->popErrors() ?? [];
         }
 
         $this->view->submitButtonValue = 'Create';
@@ -74,7 +58,7 @@ class PostsController extends Controller
         if (Input::isPost())
         {
 			$this->_verifyUpdated($slug);
-            $this->view->errors = $this->postsModel->popErrors();
+            $this->view->errors = $this->postsModel->popErrors() ?? [];
 			$this->view->post = $this->postsModel->populate($_POST);
         }
 		else 
@@ -101,6 +85,30 @@ class PostsController extends Controller
 
         Router::redirect('posts');
 	}
+	
+	public function category_action($slug)
+	{
+		$this->_currentPage = (Input::get('page')) ? Input::get('page') : 1;
+		
+		if (!$this->view->category = $this->categoriesModel->findBySlug($slug))
+		{
+			$this->view->render('error/404');
+			exit;
+		}
+		
+		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');
+        $this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
+																   $this->_getPostIdOffset(), 
+																   $this->view->category->id);
+
+		$this->view->pagination = $this->_preparePagination($this->view->category->id, 'postsCategoriesModel', 'postIdsByCategoryId', count($postIds));
+		$this->postsModel->lastSelectId();
+		
+		ArrayHelper::callMethod($this->view->posts, 'truncateText', [600]);
+		ArrayHelper::callMethod($this->view->posts, 'prepareForDisplay');
+
+		$this->view->render('posts/category');
+	}
 
     private function _verifyCreated()
     {
@@ -126,18 +134,25 @@ class PostsController extends Controller
         }
     }
 
-    private function _preparePagination()
+	/**
+	 * 
+	 * Pandora's box
+	 * 
+	 * 
+	 *
+	 */
+    private function _preparePagination($params = [], $model = 'postsModel', $method = 'count', $number = 0)
     {
-        $posts = $this->postsModel->count();
-        $tabsNumber = ceil($posts / self::POSTS_PER_PAGE);
+       	$posts = (!empty($number)) ? $number : $this->{$model}->{$method}($params);
+		$tabsNumber = ceil($posts / self::POSTS_PER_PAGE);
 
-        return HTML::pagination($tabsNumber, (int) $this->_currentPage, URL . 'posts?page=');
+        return HTML::pagination($tabsNumber, (int) $this->_currentPage, Helper::actualUrl() . '?page=');
     }
 
-    private function _getPostIdOffset()
+    private function _getPostIdOffset($params = [], $model = 'postsModel', $method = 'getIds')
     {
-        return $this->postsModel->getIds()[($this->_currentPage - 1) * self::POSTS_PER_PAGE];
+        return $this->{$model}->{$method}($params)[($this->_currentPage - 1) * self::POSTS_PER_PAGE];
 
-        return ($this->_currentPage - 1) * self::POSTS_PER_PAGE + 1;
+//        return ($this->_currentPage - 1) * self::POSTS_PER_PAGE + 1;
     }
 }

@@ -29,9 +29,21 @@ class ArrayHelper
         return $result;
     }
 	
-	public static function selectProperty($data, $property)
+	public static function callMethod($data, $func, $args = [])
 	{
-		dd($data);
-		echo 'good';die;
+		if (empty($data) || !count($data))
+		{
+			return false;
+		}
+		
+		foreach ($data as $object)
+		{
+			if (method_exists(get_class($object), $func))
+			{
+				call_user_func_array([$object, $func], $args);
+			}
+		}
+		
+		return true;
 	}
 }

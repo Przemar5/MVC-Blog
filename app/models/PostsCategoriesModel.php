@@ -3,7 +3,7 @@
 
 class PostsCategoriesModel extends Model
 {
-    public $id, $post_id, $category_id;
+    public $id, $post_id, $category_id, $post_ids;
 	
 	private $validationRules = [
         'category_id' => [
@@ -17,8 +17,6 @@ class PostsCategoriesModel extends Model
     public function __construct()
     {
         parent::__construct('posts_categories');
-
-        $this->loadModel('categories');
     }
 
     public function categoryForPost($postId, $class = true)
@@ -26,8 +24,13 @@ class PostsCategoriesModel extends Model
         $this->category_id = $this->findFirst(['values' => 'category_id', 'conditions' => 'post_id = ?', 'bind' => [$postId]], false);
 		$this->category_id = ArrayHelper::flattenSingles($this->category_id);
 		
-		return $this->categoriesModel->findById($this->category_id);
+		return ModelMediator::make('categories', 'findById', [$this->category_id]);
     }
+	
+	public function postIdsForCategoryId($categoryId, $order = 'post_id ASC')
+	{
+		return ArrayHelper::flattenSingles($this->find(['conditions' => 'category_id = ' . $categoryId, 'order' => $order]));
+	}
 	
 	public function updateCategoryForPost($postId, $categoryId)
 	{
@@ -43,6 +46,40 @@ class PostsCategoriesModel extends Model
 	
 	public function countPostsForCategory($categoryId)
 	{
-		return $this->count(['conditions' => 'category_id = ?', 'bind' => $categoryId]);
+		return $this->count(['conditions' => 'category_id = ?', 'bind' => [$categoryId]]);
+	}
+	
+	
+	
+	public function postIdsByCategoryId($categoryId)
+	{
+		$data = [
+			'values' => 'post_id', 
+			'conditions' => 'category_id = ?', 
+			'bind' => [$categoryId]
+		];
+		
+		$this->post_ids = ArrayHelper::flattenSingles($this->find($data, false));
+		
+		return $this->post_ids;
+	}
+	
+	public function postsByCategoryId($categoryId)
+	{
+		$post_ids = $this->postIdsByCategory($categoryId);
+	
+		$conditions = '';
+		
+		if (!empty($post_ids))
+		{
+			foreach ($post_ids as $post_id)
+			{
+				$conditions .= ' id = ? OR';
+			}
+		
+			$conditions = rtrim($conditions, ' OR');
+		}
+		
+		return ModelMediator::make('posts', 'find', [['conditions' => $conditions, 'bind' => $post_ids]]);
 	}
 }

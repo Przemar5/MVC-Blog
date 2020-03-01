@@ -10,7 +10,8 @@ class Database
 
     public function __construct()
     {
-        try {
+        try 
+		{
             $dsn = 'mysql:host=localhost;dbname=new_big_blog;';
             $this->_pdo = new PDO($dsn, 'root', '');
             $this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -104,14 +105,21 @@ class Database
                 }
             }
 
-            if ($this->_query->execute())
-            {
-                return true;
-            }
-            else
-            {
-                $this->_error = true;
-            }
+			try
+			{
+				if ($this->_query->execute())
+				{
+					return true;
+				}
+				else
+				{
+					$this->_error = true;
+				}
+			}
+			catch (PDOException $e)
+			{
+				die($e->getMessage());
+			}
         }
 
         return false;
@@ -120,39 +128,46 @@ class Database
     public function query($sql, $params = [], $class = false)
     {
         $this->_error = false;
+		
+		try
+		{
+			if ($this->_query = $this->_pdo->prepare($sql))
+			{
+				$x = 1;
 
-        if ($this->_query = $this->_pdo->prepare($sql))
-        {
-            $x = 1;
+				if (count($params))
+				{
+					foreach ($params as $param)
+					{
+						$this->_query->bindValue($x, $param);
+						$x++;
+					}
+				}
 
-            if (count($params))
-            {
-                foreach ($params as $param)
-                {
-                    $this->_query->bindValue($x, $param);
-                    $x++;
-                }
-            }
+				if ($this->_query->execute())
+				{
+					if ($class)
+					{
+						$this->_result = $this->_query->fetchAll(PDO::FETCH_CLASS, $class);
+					}
+					else
+					{
+						$this->_result = $this->_query->fetchAll(PDO::FETCH_OBJ);
+					}
 
-            if ($this->_query->execute())
-            {
-                if ($class)
-                {
-                    $this->_result = $this->_query->fetchAll(PDO::FETCH_CLASS, $class);
-                }
-                else
-                {
-                    $this->_result = $this->_query->fetchAll(PDO::FETCH_OBJ);
-                }
-
-                $this->_count = $this->_query->rowCount();
-                $this->_lastInsertId = $this->_pdo->lastInsertId();
-            }
-            else
-            {
-                $this->_error = true;
-            }
-        }
+					$this->_count = $this->_query->rowCount();
+					$this->_lastInsertId = $this->_pdo->lastInsertId();
+				}
+				else
+				{
+					$this->_error = true;
+				}
+			}
+		}
+		catch (PDOException $e)
+		{
+			die($e->getMessage());
+		}
 
         return $this;
     }
@@ -204,7 +219,7 @@ class Database
                 $conditionString = ' WHERE ' . $conditionString;
             }
         }
-
+		
         // Binding
         if (isset($params['bind']))
         {
@@ -282,9 +297,8 @@ class Database
     public function selectCount($table, $params = [])
     {
         $params['values'] = ' COUNT(*) ';
-
         $this->findFirst($table, $params, false);
-
+		
         if ($this->_read($table, $params, false))
         {
             return reset($this->results()[0]);
