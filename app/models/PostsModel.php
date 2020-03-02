@@ -12,25 +12,33 @@ class PostsModel extends Model
             'min' => ['args' => [6], 'msg' => 'Post title must be equal or longer than 6 characters.'],
             'max' => ['args' => [150], 'msg' => 'Post title cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z \@\+\/\?\!\$\_\-]+'], 'msg' => 'Post title contains illegal characters.'],
-        ],
+        	'unique' => ['args' => ['posts', 'title'], 'msg' => 'Post title must be unique'],
+		],
         'label' => [
             'required' => ['msg' => 'Post label is required.'],
             'min' => ['args' => [6], 'msg' => 'Post label must be equal or longer than 6 characters.'],
             'max' => ['args' => [150], 'msg' => 'Post label cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z \@\+\/\?\!\$\_\-]+'], 'msg' => 'Post label contains illegal characters.'],
-        ],
+        	'unique' => ['args' => ['posts', 'label'], 'msg' => 'Post label must be unique'],
+		],
         'slug' => [
             'required' => ['msg' => 'Slug is required.'],
             'min' => ['args' => [6], 'msg' => 'Slug must be equal or longer than 6 characters.'],
             'max' => ['args' => [150], 'msg' => 'Slug cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z_\-]+'], 'msg' => 'Slug contains illegal characters.'],
-        ],
+        	'unique' => ['args' => ['posts', 'slug'], 'msg' => 'Post slug must be unique'],
+		],
 		'category_id' => [
-            'required' => ['msg' => 'Category is required.'],
-            'numeric' => ['msg' => 'Invalid category.'],
-            'regex' => ['args' => ['[0-9]{1,7}'], 'msg' => 'Invalid category.'],
-            'exists' => ['args' => ['categories', 'id'], 'msg' => "Category doesn't exist."]
+            'required' => ['msg' => ''],
+            'numeric' => ['msg' => ''],
+            'regex' => ['args' => ['[0-9]{1,7}'], 'msg' => ''],
+            'exists' => ['args' => ['categories', 'id'], 'msg' => '']
         ],
+		'tag_ids' => [
+			'multiple' => true,
+			'numeric' => ['msg' => 'num'],
+			'exists' => ['args' => ['tags', 'id'], 'msg' => 'exists'],
+		],
         'body' => [
             'required' => ['msg' => 'Post body is required.'],
             'min' => ['args' => [20], 'msg' => 'Post must be equal or longer than 20 characters.'],
@@ -68,7 +76,11 @@ class PostsModel extends Model
 		
 		if ($update)
 		{
-			$this->validationRules['user_id']['match'] = ['args' => [$this->user_id], 'msg' =>''];
+			$this->ValidationRulesForUpdate();
+		}
+		else 
+		{
+			$this->ValidationRulesForInsert();
 		}
 		
         $this->validation->check([
@@ -76,6 +88,7 @@ class PostsModel extends Model
             'label' => $this->label,
             'slug' => $this->slug,
             'category_id' => $this->category_id,
+//            'tag_ids' => $this->tag_ids,
             'tag_ids' => $this->tag_ids,
 			'body' => $this->body,
 			'user_id' => UsersModel::currentLoggedInUserId(),
@@ -83,15 +96,52 @@ class PostsModel extends Model
 
         if ($this->validation->passed())
         {
+			dd('passed');
             return true;
         }
         else
         {
             $this->errors = $this->validation->errors();
-
+			
+			dd($_POST);
             return false;
         }
     }
+	
+	private function validationRulesForInsert()
+	{
+		if (isset($this->validationRules['user_id']['match']))
+		{
+			unset($this->validationRules['user_id']['match']);
+		}
+		$this->removeUniqueException('title');
+		$this->removeUniqueException('label');
+		$this->removeUniqueException('slug');
+	}
+	
+	private function validationRulesForUpdate()
+	{
+		$this->validationRules['user_id']['match'] = ['args' => [$this->user_id], 'msg' =>''];
+		$this->addUniqueException('title');
+		$this->addUniqueException('label');
+		$this->addUniqueException('slug');
+	}
+	
+	private function addUniqueException($column)
+	{
+		if (!isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			array_push($this->validationRules[$column]['unique']['args'], $this->id);
+		}
+	}
+	
+	private function removeUniqueException($column)
+	{
+		if (isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			unset($this->validationRules[$column]['unique']['args'][2]);
+		}
+	}
 	
 	public function getAdditionalInfo()
 	{
@@ -153,13 +203,14 @@ class PostsModel extends Model
 		return $post;
     }
 	
-	public function lastFromByCategoryId($limit, $offset, $categoryId, $params = [])
+	public function lastFromByCategoryId($limit, $offset, $categoryId, $class = false)
 	{
-		$post_ids = ModelMediator::make('postsCategories', 'postIdsForCategoryId', [$categoryId, 'post_id DESC']);
-		$params['conditions'] = Helper::repeatString(' id = ?', count($post_ids), ' OR');
-		$params['bind'] = $post_ids;
-		
-		return $this->lastFrom($limit, $offset, $params);
+		$offset += 1;
+		$class = ($class) ? get_class($this) : false;
+		$sql = 'SELECT * FROM posts WHERE ' .
+				'id IN (SELECT post_id FROM posts_categories WHERE category_id = ?) ' .
+				'AND id < ? ORDER BY id DESC LIMIT ?';
+		return $this->_db->query($sql, [$categoryId, $offset, $limit], $class)->results();
 	}
 	
 	public function lastFromByCategorySlug($limit, $offset, $slug, $params = [])
@@ -175,11 +226,11 @@ class PostsModel extends Model
 	{
 	    if ($this->id)
 		{
-			$this->updatePost();
+			return $this->updatePost();
 		}
 		else
 		{
-        	$this->insertPost();
+        	return $this->insertPost();
 		}
 	}
 

@@ -97,13 +97,15 @@ class PostsController extends Controller
 		}
 		
 		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');
-        $this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
-																   $this->_getPostIdOffset(), 
-																   $this->view->category->id);
-
-		$this->view->pagination = $this->_preparePagination($this->view->category->id, 'postsCategoriesModel', 'postIdsByCategoryId', count($postIds));
-		$this->postsModel->lastSelectId();
+//        $postIds = array_reverse($postIds);
 		
+		$this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
+																   $this->_getPostIdOffset(), 
+																   $this->view->category->id, true);
+//		dd($this->postsModel->debugDumpParams());
+		$this->view->pagination = $this->_preparePagination($this->view->category->id, 'postsCategoriesModel', 'postIdsByCategoryId', count($postIds));
+		
+		ArrayHelper::callMethod($this->view->posts, 'getAdditionalInfo');
 		ArrayHelper::callMethod($this->view->posts, 'truncateText', [600]);
 		ArrayHelper::callMethod($this->view->posts, 'prepareForDisplay');
 
@@ -115,7 +117,7 @@ class PostsController extends Controller
         $this->postsModel->populate($_POST);
 
         if ($this->postsModel->check() && $this->postsModel->save())
-        {
+		{
             Session::set('last_action', 'Your post had been added successfully.');
             Router::redirect('posts');
         }

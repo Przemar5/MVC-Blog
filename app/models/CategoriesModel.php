@@ -11,12 +11,14 @@ class CategoriesModel extends Model
             'min' => ['args' => [6], 'msg' => 'Category name must be equal or longer than 6 characters.'],
             'max' => ['args' => [150], 'msg' => 'Category name cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z _\-]+'], 'msg' => 'Category name contains illegal characters.'],
-        ],
+        	'unique' => ['args' => ['categories', 'name'], 'msg' => 'Category name must be unique'],
+		],
         'slug' => [
             'required' => ['msg' => 'Slug is required.'],
             'min' => ['args' => [6], 'msg' => 'Slug must be equal or longer than 6 characters.'],
             'max' => ['args' => [150], 'msg' => 'Slug cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z_\-]+'], 'msg' => 'Slug contains illegal characters.'],
+        	'unique' => ['args' => ['categories', 'slug'], 'msg' => 'Category slug must be unique'],
         ],
 	];
 	private $dependencies = [
@@ -31,9 +33,18 @@ class CategoriesModel extends Model
         parent::__construct('categories');
     }
 
-	public function check()
+	public function check($update = false)
     {
         $this->validation = new Validator;
+		
+		if ($update)
+		{
+			$this->ValidationRulesForUpdate();
+		}
+		else 
+		{
+			$this->ValidationRulesForInsert();
+		}
 		
         $this->validation->check([
             'name' => $this->name,
@@ -51,6 +62,34 @@ class CategoriesModel extends Model
             return false;
         }
     }
+	
+	private function validationRulesForInsert()
+	{
+		$this->removeUniqueException('name');
+		$this->removeUniqueException('slug');
+	}
+	
+	private function validationRulesForUpdate()
+	{
+		$this->addUniqueException('name');
+		$this->addUniqueException('slug');
+	}
+	
+	private function addUniqueException($column)
+	{
+		if (!isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			array_push($this->validationRules[$column]['unique']['args'], $this->id);
+		}
+	}
+	
+	private function removeUniqueException($column)
+	{
+		if (isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			unset($this->validationRules[$column]['unique']['args'][2]);
+		}
+	}
 	
 	public function idBySlug($slug)
 	{

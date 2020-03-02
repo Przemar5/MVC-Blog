@@ -3,7 +3,8 @@
 
 class Validator
 {
-	private $_data = [], $_rules = [], $_errors = [], $_currentError = null, $_passed = false;
+	private $_data = [], $_rules = [], $_errors = [], 
+			$_currentRuls = [], $_currentError = null, $_passed = false;
 	
 	
 	public function __construct()
@@ -92,6 +93,8 @@ class Validator
 
 	public function numeric($value)
 	{
+		d(func_get_args());
+		
 		return is_numeric($value);
 	}
 	
@@ -103,6 +106,16 @@ class Validator
 	public function match($value1, $value2)
 	{
 		return $value1 == $value2;
+	}
+	
+	public function unique($value, $table, $column, $id = null)
+	{
+		$model = Helper::tableToModelName($table);
+		$params['conditions'] = $column . ' = ?';
+		$params['conditions'] .= ($id) ? ' AND id != ?' : '';
+		$params['bind'] = ($id) ? [$value, $id] : [$value];
+		
+		return empty(ModelMediator::make($model, 'count', [$params]));
 	}
 	
 	public function errors()

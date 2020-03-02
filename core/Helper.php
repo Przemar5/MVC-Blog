@@ -63,7 +63,7 @@ class Helper
 			{
 				$result .= $pattern;
 				
-				if ($number > 1)
+				if ($number >= 1)
 				{
 					$result .= $glue;
 				}
@@ -71,6 +71,23 @@ class Helper
 			
 			return $result;
 		}
+	}
+	
+	public static function tableToModelName($table)
+	{
+		$table = explode('_', $table);
+
+		$result = array_shift($table);
+
+		if (!empty($table))
+		{
+			foreach ($table as $part)
+			{
+				$result .= ucfirst($part);
+			}
+		}
+
+		return $result;
 	}
 	
 	public static function actualUrl()
