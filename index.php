@@ -10,6 +10,7 @@ require_once 'core/ArrayHelper.php';
 require_once 'core/Controller.php';
 require_once 'core/Database.php';
 require_once 'core/Form.php';
+require_once 'core/GraphHelper.php';
 require_once 'core/Helper.php';
 require_once 'core/HTML.php';
 require_once 'core/Input.php';

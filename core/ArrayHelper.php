@@ -31,6 +31,8 @@ class ArrayHelper
 	
 	public static function callMethod($data, $func, $args = [])
 	{
+		$result = [];
+		
 		if (empty($data) || !count($data))
 		{
 			return false;
@@ -40,10 +42,69 @@ class ArrayHelper
 		{
 			if (method_exists(get_class($object), $func))
 			{
-				call_user_func_array([$object, $func], $args);
+				$result[] = call_user_func_array([$object, $func], $args);
 			}
 		}
 		
-		return true;
+		return $result;
+	}
+	
+	public static function callForArgs($object, $func, $args = [])
+	{
+		$result = [];
+		
+		if (empty($args) || !count($args) || !method_exists(get_class($object), $func))
+		{
+			return false;
+		}
+		
+		foreach ($args as $arg)
+		{
+			$result[] = call_user_func_array([$object, $func], [$arg]);
+		}
+		
+		return $result;
+	}
+	
+	public static function ifChildArray($array)
+	{
+		if (!is_array($array))
+		{
+			return false;
+		}
+		
+		foreach ($array as $element)
+		{
+			if (is_array($element))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static function getGrandChildArray(&$array)
+	{
+		if (!is_array($array))
+		{
+			return false;
+		}
+		
+		foreach ($array as $element)
+		{
+			if (is_array($element) && !empty($element))
+			{
+				foreach ($element as $e)
+				{
+					if (is_array($e))
+					{
+						return $e;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 }

@@ -48,15 +48,15 @@ class Model
 		
 		if ($additionalInfo && !empty($result))
 		{
-//			$class = get_class($this);
-//
-//			if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
-//			{
-//				foreach ($result as $row)
-//				{
-//					$row->getAdditionalInfo();
-//				}
-//			}
+			$class = get_class($this);
+
+			if ($result[0] instanceof $class && method_exists($this, 'getAdditionalInfo'))
+			{
+				foreach ($result as $row)
+				{
+					$row->getAdditionalInfo();
+				}
+			}
 		}
 		
         return $result;
@@ -191,6 +191,61 @@ class Model
         }
         return [];
     }
+	
+	public function complexFind($paths = [], $params = [])
+	{
+		$sql = '';
+		$mainValues = (isset($params['values'])) ? implode(', ', $params['values']) : '*';
+		$bracketsCounter = 0;
+		
+		if (!empty($paths) && count($paths))
+		{
+			foreach ($paths as $pathName => $path)
+			{
+				$path = array_reverse($path);
+				
+				if (!empty($paths) && count($paths))
+				{
+					foreach ($path as $table => $values)
+					{
+						$valuesList = (!empty($mainValues)) ? $mainValues : array_pop($values);
+						$whereValue = (is_array($values)) ? array_pop($values) : $values;
+						unset($mainValues);
+						$sql .= 'SELECT ' . $valuesList . ' FROM ' . $table . ' WHERE ';
+						
+						if ($bracketsCounter < count($path) - 1)
+						{
+							$sql .= $whereValue . ' IN (';
+						}
+						else 
+						{
+							$params['bind'] = reset($params['data'][$pathName]);
+							$sql .= Helper::repeatString($whereValue . ' = ?', count($params['bind']), ' OR ');
+						}
+							
+						$bracketsCounter++;
+					}
+				}
+			}
+			
+			while ($bracketsCounter > 1)
+			{
+				
+				$sql .= ')';
+				$bracketsCounter--;
+			}
+			
+			$sign = (preg_match('/^.* DESC$/i', $params['order'])) ? '<' : '>';
+			
+			$from = (isset($params['from'])) ? ' AND id ' . $sign . ' ' . $params['from'] : '';
+			$order = (isset($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
+			$limit = (isset($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
+			
+			$sql .= $from . $order . $limit;
+		}
+		
+		return $this->_db->query($sql, $params['bind'], true)->results();
+	}
 
     public function select($params = [])
     {

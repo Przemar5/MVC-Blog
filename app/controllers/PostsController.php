@@ -4,7 +4,7 @@
 class PostsController extends Controller
 {
     private const POSTS_PER_PAGE = 5;
-    private $_currentPage = 1;
+    private $_currentPage = 1, $_tagNames, $_category, $_params;
 
 	public function __construct()
 	{
@@ -16,7 +16,14 @@ class PostsController extends Controller
 	public function index_action()
 	{
 	    $this->_currentPage = (Input::get('page')) ? Input::get('page') : 1;
+		
+		if (Input::isGet())
+		{
+			$this->extractGet('tag', '_tagNames', true);
+		}
 
+		$this->_findPosts();
+		
         $this->view->posts = $this->postsModel->lastFrom(self::POSTS_PER_PAGE, $this->_getPostIdOffset());
 	    $this->view->pagination = $this->_preparePagination();
         $this->postsModel->lastSelectId();
@@ -25,6 +32,41 @@ class PostsController extends Controller
 		ArrayHelper::callMethod($this->view->posts, 'prepareForDisplay');
 
 		$this->view->render('posts/index');
+	}
+	
+	private function extractGet($get, $property, $multiple = false)
+	{
+		if (!empty($_GET[$get]))
+		{
+			$this->{$property} = $_GET[$get];
+		}
+	}
+	
+	private function _findPosts()
+	{
+		if (!empty($this->_tagNames))
+		{
+			if (!$this->view->tags = ArrayHelper::callForArgs($this->tagsModel, 'findByName', $this->_tagNames))
+			{
+				Router::redirect(URL . 'posts');
+			}
+			
+			$params = [
+				'data' => [
+					'tags' => [
+						'name' => $this->_tagNames
+					]
+				]
+			];
+			
+			$this->view->posts = $this->postsModel->lastFromFor(self::POSTS_PER_PAGE, $this->_getPostIdOffset(), $params);
+			
+//			$this->_params['conditions'] = Helper::repeatString('id = ?', count($this->_tagNames), ' OR ');
+//			
+//			$this->view->tags = ArrayHelper::callForArgs($this->tagsModel, 'findByName', $this->_tagNames);
+//			$tag_ids = array_map(function($obj) {	return $obj->id; }, $this->view->tags);
+//			$posts = 
+		}
 	}
 
 	public function show_action($slug)
@@ -96,13 +138,10 @@ class PostsController extends Controller
 			exit;
 		}
 		
-		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');
-//        $postIds = array_reverse($postIds);
-		
+		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');		
 		$this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
 																   $this->_getPostIdOffset(), 
 																   $this->view->category->id, true);
-//		dd($this->postsModel->debugDumpParams());
 		$this->view->pagination = $this->_preparePagination($this->view->category->id, 'postsCategoriesModel', 'postIdsByCategoryId', count($postIds));
 		
 		ArrayHelper::callMethod($this->view->posts, 'getAdditionalInfo');

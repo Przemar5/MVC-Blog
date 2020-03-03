@@ -50,20 +50,20 @@ class PostsModel extends Model
 		]
     ];
     private $formValues = ['title', 'label', 'slug', 'category_id', 'tags', 'body', 'user_id'];
-	private $dependencies = [
-		'posts_tags' => [
-			'key' => ['id', 'post_id'],
-			'select' => ['select'],
-			'update' => ['delete', 'insert'],
-			'delete' => ['delete'],
-		], 
-		'posts_categories' => [
-			'key' => ['id', 'post_id'],
-			'select' => ['select'],
-			'update' => ['delete', 'insert'],
-			'delete' => ['delete'],
-		]
-	];
+//	private $dependencies = [
+//		'posts_tags' => [
+//			'key' => ['id', 'post_id'],
+//			'select' => ['select'],
+//			'update' => ['delete', 'insert'],
+//			'delete' => ['delete'],
+//		], 
+//		'posts_categories' => [
+//			'key' => ['id', 'post_id'],
+//			'select' => ['select'],
+//			'update' => ['delete', 'insert'],
+//			'delete' => ['delete'],
+//		]
+//	];
 
     public function __construct()
     {
@@ -211,6 +211,101 @@ class PostsModel extends Model
 				'id IN (SELECT post_id FROM posts_categories WHERE category_id = ?) ' .
 				'AND id < ? ORDER BY id DESC LIMIT ?';
 		return $this->_db->query($sql, [$categoryId, $offset, $limit], $class)->results();
+	}
+	
+	public function lastFromWhere($amount = 1, $from = 0, $where = [], $params = [], $class = true, $additionalInfo = true)
+	{
+		if (!empty($where))
+		{
+			if (!empty($where['tag']))
+			{
+				$params['conditions'] = Helper::repeatString();
+			}
+		}
+	}
+	
+	private $dependencies = [
+		'posts_tags' => [
+			'key' => ['id', 'tag_id'],
+			'select' => ['select'],
+			'update' => ['delete', 'insert'],
+			'delete' => ['delete'],
+		], 
+		'posts_categories' => [
+			'key' => ['id', 'post_id'],
+			'select' => ['select'],
+			'update' => ['delete', 'insert'],
+			'delete' => ['delete'],
+		]
+	];
+	
+	private $references = [
+		'posts' => [
+			'key' => [
+				'id' => [
+					'posts_categories' => [
+						'value' => 'post_id',
+						'key' => [
+							'category_id' => [
+								'categories' => [
+									'value' => 'id'
+								]
+							]
+						]
+					],
+					'posts_tags' => [
+						'value' => 'post_id',
+						'key' => [
+							'tag_id' => [
+								'tags' => [
+									'value' => 'id'
+								]
+							]
+						]
+					]
+				]
+			]
+		]
+	];
+	
+	private $refs = [
+		[
+			'posts' => 'id', 
+			'posts_tags' => 'post_id',
+			'posts_categories' => 'post_id'
+		],
+		[
+			'posts_tags' => 'tag_id', 
+			'tags' => 'id'
+		],
+		[
+			'posts_categories' => 'category_id', 
+			'categories' => 'id'
+		],
+	];
+	
+	public function lastFromFor($limit, $offset, $params = [])
+	{
+		foreach ($params['data'] as $table => $column)
+		{
+			$path[$table] = GraphHelper::findPath($this->refs, $table, $this->_table, key($column));
+		}
+		
+		$params['order'] = 'id DESC';
+		$params['limit'] = $limit;
+		$params['from'] = $offset;
+		
+		return $this->complexFind($path, $params);
+		
+//		$model = Helper::tableToModelName(key($params));
+//		d($model);
+//		dd($path);
+//		
+//		
+//		$this->_params['conditions'] = Helper::repeatString('id = ?', count($this->_tagNames), ' OR ');
+//
+//		$this->view->tags = ArrayHelper::callForArgs($this->tagsModel, 'findByName', $this->_tagNames);
+//		$tag_ids = array_map(function($obj) {	return $obj->id; }, $this->view->tags);
 	}
 	
 	public function lastFromByCategorySlug($limit, $offset, $slug, $params = [])
