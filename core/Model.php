@@ -192,10 +192,11 @@ class Model
         return [];
     }
 	
-	public function complexFind($paths = [], $params = [])
+	public function complexFind($paths = [], $params = [], $class = true, $dependencies = true)
 	{
 		$sql = '';
-		$mainValues = (isset($params['values'])) ? implode(', ', $params['values']) : '*';
+		$mainValues = (isset($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
+		$mainValues = (!empty($mainValues)) ? $mainValues : '*';
 		$bracketsCounter = 0;
 		
 		if (!empty($paths) && count($paths))
@@ -211,6 +212,7 @@ class Model
 						$valuesList = (!empty($mainValues)) ? $mainValues : array_pop($values);
 						$whereValue = (is_array($values)) ? array_pop($values) : $values;
 						unset($mainValues);
+						
 						$sql .= 'SELECT ' . $valuesList . ' FROM ' . $table . ' WHERE ';
 						
 						if ($bracketsCounter < count($path) - 1)
@@ -235,8 +237,7 @@ class Model
 				$bracketsCounter--;
 			}
 			
-			$sign = (preg_match('/^.* DESC$/i', $params['order'])) ? '<' : '>';
-			
+			$sign = (preg_match('/^.* DESC$/i', $params['order'])) ? '<=' : '>=';
 			$from = (isset($params['from'])) ? ' AND id ' . $sign . ' ' . $params['from'] : '';
 			$order = (isset($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
 			$limit = (isset($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
@@ -244,7 +245,19 @@ class Model
 			$sql .= $from . $order . $limit;
 		}
 		
-		return $this->_db->query($sql, $params['bind'], true)->results();
+		$class = ($class) ? get_class($this) : false;
+		
+		if (!$dependencies)
+		{
+			return $this->_db->query($sql, $params['bind'], $class)->results();
+		}
+		else
+		{
+			$results = $this->_db->query($sql, $params['bind'], $class)->results();
+			ArrayHelper::callMethod($results, 'getAdditionalInfo');
+			
+			return $results;
+		}
 	}
 
     public function select($params = [])

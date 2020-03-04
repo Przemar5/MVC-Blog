@@ -88,22 +88,20 @@ class PostsModel extends Model
             'label' => $this->label,
             'slug' => $this->slug,
             'category_id' => $this->category_id,
-//            'tag_ids' => $this->tag_ids,
             'tag_ids' => $this->tag_ids,
 			'body' => $this->body,
 			'user_id' => UsersModel::currentLoggedInUserId(),
         ], $this->validationRules);
 
+		
         if ($this->validation->passed())
         {
-			dd('passed');
             return true;
         }
         else
         {
             $this->errors = $this->validation->errors();
 			
-			dd($_POST);
             return false;
         }
     }
@@ -143,10 +141,34 @@ class PostsModel extends Model
 		}
 	}
 	
+	private $dependencies = [
+		'binding' => [
+			'category' => 'categories',
+			'tags' => 'tags'
+		],
+		'select' => [
+			'categories' => ['*'],
+			'tags' => ['*']
+		]
+	];
+	
 	public function getAdditionalInfo()
 	{
-		$this->getCategory();
-		$this->getTags();
+		if (empty($this->id))
+		{
+			return false;
+		}
+		
+		foreach ($this->dependencies['binding'] as $property => $object)
+		{
+			if (empty($this->{$property}))
+			{
+				$this->{$property} = ModelMediator::make($this->_table . $object, 
+														 $property . 'ForPost', 
+														 [$this->id, 
+														  ['values' => $this->dependencies['select'][$object]]]);
+			}
+		}
 	}
 	
 	private function getCategory()
@@ -224,71 +246,13 @@ class PostsModel extends Model
 		}
 	}
 	
-	private $dependencies = [
-		'posts_tags' => [
-			'key' => ['id', 'tag_id'],
-			'select' => ['select'],
-			'update' => ['delete', 'insert'],
-			'delete' => ['delete'],
-		], 
-		'posts_categories' => [
-			'key' => ['id', 'post_id'],
-			'select' => ['select'],
-			'update' => ['delete', 'insert'],
-			'delete' => ['delete'],
-		]
-	];
-	
-	private $references = [
-		'posts' => [
-			'key' => [
-				'id' => [
-					'posts_categories' => [
-						'value' => 'post_id',
-						'key' => [
-							'category_id' => [
-								'categories' => [
-									'value' => 'id'
-								]
-							]
-						]
-					],
-					'posts_tags' => [
-						'value' => 'post_id',
-						'key' => [
-							'tag_id' => [
-								'tags' => [
-									'value' => 'id'
-								]
-							]
-						]
-					]
-				]
-			]
-		]
-	];
-	
-	private $refs = [
-		[
-			'posts' => 'id', 
-			'posts_tags' => 'post_id',
-			'posts_categories' => 'post_id'
-		],
-		[
-			'posts_tags' => 'tag_id', 
-			'tags' => 'id'
-		],
-		[
-			'posts_categories' => 'category_id', 
-			'categories' => 'id'
-		],
-	];
+	private $additionalInfo = ['categories', 'tags'];
 	
 	public function lastFromFor($limit, $offset, $params = [])
 	{
 		foreach ($params['data'] as $table => $column)
 		{
-			$path[$table] = GraphHelper::findPath($this->refs, $table, $this->_table, key($column));
+			$path[$table] = GraphHelper::findPath(ModelMediator::$refs, $table, $this->_table, key($column));
 		}
 		
 		$params['order'] = 'id DESC';
@@ -296,16 +260,19 @@ class PostsModel extends Model
 		$params['from'] = $offset;
 		
 		return $this->complexFind($path, $params);
+	}
+	
+	public function idDescFor($params)
+	{
+		foreach ($params['data'] as $table => $column)
+		{
+			$path[$table] = GraphHelper::findPath(ModelMediator::$refs, $table, $this->_table, key($column));
+		}
 		
-//		$model = Helper::tableToModelName(key($params));
-//		d($model);
-//		dd($path);
-//		
-//		
-//		$this->_params['conditions'] = Helper::repeatString('id = ?', count($this->_tagNames), ' OR ');
-//
-//		$this->view->tags = ArrayHelper::callForArgs($this->tagsModel, 'findByName', $this->_tagNames);
-//		$tag_ids = array_map(function($obj) {	return $obj->id; }, $this->view->tags);
+		$params['values'] = 'id';
+		$params['order'] = 'id DESC';
+		
+		return ArrayHelper::flattenSingles($this->complexFind($path, $params, false));
 	}
 	
 	public function lastFromByCategorySlug($limit, $offset, $slug, $params = [])

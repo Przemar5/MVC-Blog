@@ -3,14 +3,73 @@
 
 class Validator
 {
-	private $_data = [], $_rules = [], $_errors = [], 
-			$_currentRuls = [], $_currentError = null, $_passed = false;
+	private $_data = [], $_rules = [], $_errors = [], $_checkMultiple = false, 
+			$_currentRule = [], $_currentField = null, $_currentValue = null, $_currentError = null, $_passed = false;
 	
 	
 	public function __construct()
 	{
 		//
 	}
+	
+//	public function check($data, $rules, $msgs = true)
+//	{
+//		$this->_data = $data;
+//		$this->_rules = $rules;
+//		$this->_passed = true;
+//		
+//		
+//		foreach ($rules as $field => $fieldRules)
+//		{
+//			$this->_currentField = $field;
+//			$this->_currentValue = $data[$field];
+//			
+//			if (array_key_exists($field, $data))
+//			{
+//				foreach ($fieldRules as $method => $params)
+//				{
+//					d($fieldRules);
+//					
+//					if ($method === 'multiple' && $params === true)
+//					{
+//						$this->_checkMultiple = true;
+//					}
+//					else
+//					{
+//						$this->_checkMultiple = false;
+//					}
+//					
+//					if (method_exists($this, $method))
+//					{
+//						if ($this->_checkMultiple)
+//						{
+//							 $args = (!empty($params['args']))
+//                                ? array_merge([$data[$field]], $params['args']) : [$data[$field]];
+//							d($args);
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//	
+//	private function execute()
+//	{
+//		$args = (!empty($params['args']))
+//			? array_merge([$data[$field]], $params['args']) : [$data[$field]];
+//
+//		if (!call_user_func_array([$this, $method], $args))
+//		{
+//			$this->_passed = false;
+//
+//			if ($msgs)
+//			{
+//				$this->setError($field, $params['msg']);
+//			}
+//
+//			break 1;
+//		}
+//	}
 	
 	public function check($data, $rules, $msgs = true)
 	{
@@ -22,47 +81,62 @@ class Validator
 		{
 			if (array_key_exists($field, $data))
 			{
+				$this->_currentField = $field;
+				
 				foreach ($fieldRules as $method => $params)
 				{
-					if (method_exists($this, $method))
+					if ($method === 'multiple' && $params === true)
 					{
-					    if (is_array($data) || is_object($data))
-                        {
-                            $args = (!empty($params['args']))
-                                ? array_merge([$data[$field]], $params['args']) : [$data[$field]];
+						$this->_checkMultiple = $field;
+					}
+					
+					if ($this->_checkMultiple === $this->_currentField)
+					{
+						$values = $data[$field];
+						$i = 0;
+						
+						for ($i; $i < count($values); $i++)
+						{
+							if (method_exists($this, $method))
+							{
+								$args = (!empty($params['args']))
+									? array_merge([0 => $values[$i]], $params['args']) : [$values[$i]];
 
-                            foreach ($args as $arg)
-                            {
-                                if (!call_user_func_array([$this, $method], $args))
-                                {
-                                    $this->_passed = false;
+								if (!call_user_func_array([$this, $method], $args))
+								{
+									$this->_passed = false;
 
-                                    if ($msgs)
-                                    {
-                                        $this->setError($field, $params['msg']);
-                                    }
+									if ($msgs)
+									{
+										$this->setError($field, $params['msg']);
+									}
 
-                                    break 2;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            $args = (!empty($params['args']))
-                                ? array_merge([$data[$field]], $params['args']) : [$data[$field]];
+									break 2;
+								}
+							}
+						}
+					}
+					else 
+					{
+						$this->_checkMultiple = false;
+						
+						if (method_exists($this, $method))
+						{
+							$args = (!empty($params['args']))
+								? array_merge([$data[$field]], $params['args']) : [$data[$field]];
 
-                            if (!call_user_func_array([$this, $method], $args))
-                            {
-                                $this->_passed = false;
+							if (!call_user_func_array([$this, $method], $args))
+							{
+								$this->_passed = false;
 
-                                if ($msgs)
-                                {
-                                    $this->setError($field, $params['msg']);
-                                }
+								if ($msgs)
+								{
+									$this->setError($field, $params['msg']);
+								}
 
-                                break 1;
-                            }
-                        }
+								break 1;
+							}
+						}
 					}
 				}
 			}
@@ -93,14 +167,12 @@ class Validator
 
 	public function numeric($value)
 	{
-		d(func_get_args());
-		
 		return is_numeric($value);
 	}
 	
 	public function exists($value, $table, $column)
 	{
-		return Database::getInstance()->query('SELECT * FROM ' . $table . ' WHERE ' . $column . ' = ' . $value . ' LIMIT 1');
+		return Database::getInstance()->query('SELECT * FROM ' . $table . ' WHERE ' . $column . ' = ' . $value . ' LIMIT 1');	
 	}
 	
 	public function match($value1, $value2)

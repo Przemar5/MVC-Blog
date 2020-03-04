@@ -5,6 +5,22 @@ class ModelMediator
 {
 	private static $models = [];
 	
+	public static $refs = [
+		[
+			'posts' => 'id', 
+			'posts_tags' => 'post_id',
+			'posts_categories' => 'post_id'
+		],
+		[
+			'posts_tags' => 'tag_id', 
+			'tags' => 'id'
+		],
+		[
+			'posts_categories' => 'category_id', 
+			'categories' => 'id'
+		],
+	];
+	
 	public static function loadModel($name)
 	{
 		$path = ROOT . DS . 'app' . DS . 'models' . DS . $name . 'Model.php';
@@ -38,6 +54,11 @@ class ModelMediator
 		{
 			return call_user_func_array([self::$models[$model], $methodName], $params);
 		}
+	}
+	
+	public function loadAdditionalInfo()
+	{
+		
 	}
 	
 //	public function __construct()
