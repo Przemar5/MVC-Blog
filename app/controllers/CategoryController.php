@@ -77,7 +77,7 @@ class CategoryController extends Controller
 		
         if ($this->categoriesModel->check(true) && $this->categoriesModel->save())
         {
-            Session::set('last_action', 'You have updated post successfully.');
+            Session::set('last_action', 'You have updated category successfully.');
             Router::redirect('category');
         }
     }

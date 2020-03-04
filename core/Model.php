@@ -3,7 +3,7 @@
 
 class Model
 {
-    protected $_db, $_table, $_softDelete = true, $lastSelectId, $modelMediator;
+    protected $_db, $_table, $_softDelete = true, $lastSelectId, $modelMediator, $_errors = [];
 
     public function __construct($table)
     {
@@ -297,6 +297,31 @@ class Model
         }
         return $this->_db->update($this->_table, $id, $fields);
     }
+	
+	public function updateBy($fields, $params = [])
+	{
+		if (empty($fields))
+        {
+            return false;
+        }
+		
+		$condition = '';
+		
+		foreach ($fields as $column => $value)
+		{
+			if ($value == '' && $this->{$column} == '')
+			{
+				return false;
+			}
+
+			$value = (!empty($value)) ? $value : $this->{$column};
+			$condition .= $column . ' = ' . $value . ' AND ';
+		}
+		
+		$condition = preg_replace('/ AND $/', '', $condition);
+		
+		return $this->_db->updateWhere($this->_table, $condition, $params);
+	}
 
     public function delete($id = '')
     {
@@ -314,10 +339,47 @@ class Model
 		
         return $this->_db->delete($this->_table, $id);
     }
+	
+	public function deleteBy($fields)
+	{
+		if (empty($fields))
+		{
+			return false;
+		}
+		if ($this->_softDelete)
+		{
+			return $this->updateBy($fields, ['deleted' => 1]);
+		}
+		
+		$condition = '';
+		
+		foreach ($fields as $column => $value)
+		{
+			if ($value == '' && $this->{$column} == '')
+			{
+				return false;
+			}
+
+			$value = (!empty($value)) ? $value : $this->{$column};
+			$condition .= $column . ' = ' . $value . ' AND ';
+		}
+		
+		$condition = preg_replace('/ AND $/', '', $condition);
+		
+        return $this->_db->deleteWhere($this->_table, $condition);
+	}
 
     public function query($sql, $bind = [])
     {
         return $this->_db->query($sql, $bind);
+    }
+
+	public function popErrors()
+    {
+        $errors = $this->_errors;
+        unset($this->_errors);
+
+        return $errors;
     }
 	
 	public function compare($data)

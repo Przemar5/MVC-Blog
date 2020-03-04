@@ -18,6 +18,7 @@ require_once 'core/Model.php';
 require_once 'core/ModelMediator.php';
 require_once 'core/Router.php';
 require_once 'core/Session.php';
+require_once 'core/URL.php';
 require_once 'core/Validator.php';
 require_once 'core/View.php';
 

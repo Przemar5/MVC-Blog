@@ -15,11 +15,82 @@ class TagsModel extends Model
 		],
 	];
 	private $dependencies = [
-		'posts_categories' => [
-			'key' => ['id', 'category_id'],
-			'delete' => ['delete'],
+		'delete' => [
+			'posts_tags' => [
+				'delete' => [
+					'tag_id' => 'id'
+				],
+			]
 		]
 	];
+	
+	public function deleteWithDependencies()
+	{
+		if (!$this->check(true))
+		{
+			return false;
+		}
+		
+		if (!$this->delete($this->id))
+		{
+			return false;
+		}
+		
+		return $this->actOnDependencies('delete');
+	}
+	
+	public function actOnDependencies($mode)
+	{	
+		foreach ($this->dependencies[$mode] as $table => $methods)
+		{
+			foreach ($methods as $method => $values)
+			{
+				$model = Helper::tableToModelName($table);
+				$where = [];
+				
+				foreach ($values as $key => $value)
+				{
+					$where[$key] = $this->{$value};
+				}
+				
+				if (!ModelMediator::make($model, $method . 'By', [$where]))
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+//	public function deleteWithDependencies()
+//	{
+//		if (!$this->check(true))
+//		{
+//			return false;
+//		}
+//		
+//		if (!$this->delete($this->id))
+//		{
+//			return false;
+//		}
+//		
+//		foreach ($this->dependencies as $method => $values)
+//		{
+//			foreach ($values as $table => $value)
+//			{
+//				$model = Helper::tableToModelName($table);
+//				$where = [$value[0], $this->{$value[1]}];
+//				
+//				if (!ModelMediator::make($model, 'deleteBy', $where))
+//				{
+//					return false;
+//				}
+//			}
+//		}
+//		
+//		return true;
+//	}
 	
     public function __construct()
     {
@@ -31,6 +102,86 @@ class TagsModel extends Model
 		if (!isset($this->numOfPosts))
 		{
 			$this->numOfPosts = ModelMediator::make('postsTags', 'count', [['conditions' => 'tag_id = ?', 'bind' => [$this->id]]]);
+		}
+	}
+
+    public function check($update = false)
+    {
+        $this->validation = new Validator;
+		
+		if ($update)
+		{
+			$this->ValidationRulesForUpdate();
+		}
+		else 
+		{
+			$this->ValidationRulesForInsert();
+		}
+		
+        $this->validation->check([
+            'name' => $this->name,
+        ], $this->validationRules);
+		
+        if ($this->validation->passed())
+        {
+            return true;
+        }
+        else
+        {
+            $this->_errors = $this->validation->errors();
+			
+            return false;
+        }
+    }
+	
+	private function validationRulesForInsert()
+	{
+		$this->removeUniqueException('name');
+	}
+	
+	private function validationRulesForUpdate()
+	{
+		$this->addUniqueException('name');
+	}
+	
+	private function addUniqueException($column)
+	{
+		if (!isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			array_push($this->validationRules[$column]['unique']['args'], $this->id);
+		}
+	}
+	
+	private function removeUniqueException($column)
+	{
+		if (isset($this->validationRules[$column]['unique']['args'][2]))
+		{
+			unset($this->validationRules[$column]['unique']['args'][2]);
+		}
+	}
+	
+	public function save()
+	{
+	    if ($this->id)
+		{
+			if (!$postToEdit = $this->findById($this->id))
+			{
+				return false;
+			}
+		
+			$data = [
+				'name' => $this->name,
+			];
+
+			return $this->update($this->id, $data);
+		}
+		else
+		{
+        	$data = [
+				'name' => $this->name,
+			];
+			
+			return $this->insert($data);
 		}
 	}
 	

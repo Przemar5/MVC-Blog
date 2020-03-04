@@ -56,11 +56,6 @@ class ModelMediator
 		}
 	}
 	
-	public function loadAdditionalInfo()
-	{
-		
-	}
-	
 //	public function __construct()
 //	{
 //		//

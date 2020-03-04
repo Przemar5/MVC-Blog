@@ -149,7 +149,7 @@ class HTML
         return $result;
     }
 
-    public static function pagination($tabs = 4, $active = 1, $url = '')
+    public static function pagination($tabs = 4, $active = 1, $urlStart = '', $urlEnd = '')
     {
         $html = '';
 
@@ -164,14 +164,14 @@ class HTML
             if ($i === $active)
             {
                 $html .= '<li class="page-item active">';
-                $html .= '<a class="page-link" href="' . $url . $i . '">' . $i;
+                $html .= '<a class="page-link" href="' . $urlStart . '?page=' . $i . $urlEnd . '">' . $i;
                 $html .= '<span class="sr-only">(current)</span></a>';
                 $html .= '</li>';
             }
             else
             {
                 $html .= '<li class="page-item">';
-                $html .= '<a class="page-link" href="' . $url . $i . '">' . $i;
+                $html .= '<a class="page-link" href="' . $urlStart . '?page=' . $i . $urlEnd . '">' . $i;
                 $html .= '</a>';
                 $html .= '</li>';
             }

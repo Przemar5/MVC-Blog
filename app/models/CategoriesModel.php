@@ -57,7 +57,7 @@ class CategoriesModel extends Model
         }
         else
         {
-            $this->errors = $this->validation->errors();
+            $this->_errors = $this->validation->errors();
 
             return false;
         }
@@ -110,7 +110,7 @@ class CategoriesModel extends Model
         }
         else
         {
-            $this->errors = $this->validation->errors();
+            $this->_errors = $this->validation->errors();
 
             return false;
         }
@@ -162,12 +162,4 @@ class CategoriesModel extends Model
         	return $this->insert($data);
 		}
 	}
-
-	public function popErrors()
-    {
-        $errors = $this->errors;
-        unset($this->errors);
-
-        return $errors;
-    }
 }

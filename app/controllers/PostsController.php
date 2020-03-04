@@ -145,7 +145,7 @@ class PostsController extends Controller
 		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');		
 		$this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
 													   				$this->view->category->id, true);
-		$this->view->pagination = $this->_preparePagination($this->view->category->id, 'postsCategoriesModel', 'postIdsByCategoryId', count($postIds));
+		$this->view->pagination = $this->_preparePagination();
 		
 		ArrayHelper::callMethod($this->view->posts, 'getAdditionalInfo');
 		ArrayHelper::callMethod($this->view->posts, 'truncateText', [600]);
@@ -178,29 +178,24 @@ class PostsController extends Controller
         }
     }
 
-	/**
-	 * 
-	 * Pandora's box
-	 * 
-	 * 
-	 *
-	 */
-    private function _preparePagination($params = [], $model = 'postsModel', $method = 'count', $number = 0)
+    private function _preparePagination()
     {
-       	$posts = (!empty($number)) ? $number : $this->{$model}->{$method}($params);
-		$tabsNumber = ceil($posts / self::POSTS_PER_PAGE);
-
 		$tabsNumber = ceil(count($this->_ids) / self::POSTS_PER_PAGE);
 		
-        return HTML::pagination($tabsNumber, (int) $this->_currentPage, Helper::actualUrl() . '?page=');
+		if (Input::isGet() && !empty($_GET['page']))
+		{
+			list($urlStart, $urlEnd) = URL::splitUrl('page');
+			
+			return HTML::pagination($tabsNumber, (int) $this->_currentPage, $urlStart, $urlEnd);
+		}
+		else 
+		{
+			return HTML::pagination($tabsNumber, (int) $this->_currentPage, URL::actualUrl());
+		}
     }
 
     private function _getPostIdOffset($params = [], $model = 'postsModel', $method = 'getIds')
     {
 		return $this->_ids[($this->_currentPage - 1) * self::POSTS_PER_PAGE];
-		
-        return $this->{$model}->{$method}($params)[($this->_currentPage - 1) * self::POSTS_PER_PAGE];
-
-//        return ($this->_currentPage - 1) * self::POSTS_PER_PAGE + 1;
     }
 }

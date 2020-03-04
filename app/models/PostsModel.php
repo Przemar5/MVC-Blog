@@ -50,20 +50,6 @@ class PostsModel extends Model
 		]
     ];
     private $formValues = ['title', 'label', 'slug', 'category_id', 'tags', 'body', 'user_id'];
-//	private $dependencies = [
-//		'posts_tags' => [
-//			'key' => ['id', 'post_id'],
-//			'select' => ['select'],
-//			'update' => ['delete', 'insert'],
-//			'delete' => ['delete'],
-//		], 
-//		'posts_categories' => [
-//			'key' => ['id', 'post_id'],
-//			'select' => ['select'],
-//			'update' => ['delete', 'insert'],
-//			'delete' => ['delete'],
-//		]
-//	];
 
     public function __construct()
     {
@@ -100,7 +86,7 @@ class PostsModel extends Model
         }
         else
         {
-            $this->errors = $this->validation->errors();
+            $this->_errors = $this->validation->errors();
 			
             return false;
         }
@@ -149,6 +135,25 @@ class PostsModel extends Model
 		'select' => [
 			'categories' => ['*'],
 			'tags' => ['*']
+		],
+		'insert' => [
+			'posts_categories' => [
+				'insert' => [
+					'post_id' => 'id',
+					'category_id' => 'category_id'
+				],
+			],
+			'posts_tags' => [
+				'insert' => [
+					'post_id' => 'id',
+					'tag_id' => 'tag_ids'
+				]
+			],
+		]
+		'delete' => [
+			'posts_tags' => [
+				'delete' => ['tag_id', 'id'],
+			]
 		]
 	];
 	
@@ -169,6 +174,25 @@ class PostsModel extends Model
 														  ['values' => $this->dependencies['select'][$object]]]);
 			}
 		}
+	}
+	
+	public function actOnDependencies($mode)
+	{	
+		foreach ($this->dependencies[$mode] as $table => $methods)
+		{
+			foreach ($methods as $method => $values)
+			{
+				$model = Helper::tableToModelName($table);
+				$where = [$values[0], $this->{$values[1]}];
+				
+				if (!ModelMediator::make($model, $method . 'By', $where))
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	private function getCategory()
@@ -245,8 +269,6 @@ class PostsModel extends Model
 			}
 		}
 	}
-	
-	private $additionalInfo = ['categories', 'tags'];
 	
 	public function lastFromFor($limit, $offset, $params = [])
 	{
@@ -365,14 +387,6 @@ class PostsModel extends Model
 		
 		return true;
 	}
-
-	public function popErrors()
-    {
-        $errors = $this->errors;
-        unset($this->errors);
-
-        return $errors;
-    }
 
     public function formValues()
     {

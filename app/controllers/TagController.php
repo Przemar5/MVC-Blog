@@ -13,7 +13,6 @@ class TagController extends Controller
 	public function index_action()
 	{
 		$this->view->tags = $this->tagsModel->find();
-//		dd($this->view->tags);
 		$this->view->render('tag/index');
 	}
 	
@@ -35,51 +34,63 @@ class TagController extends Controller
 		if (Input::isPost())
 		{
             $this->_verifyCreated();
-            $this->view->errors = $this->categoriesModel->popErrors() ?? [];
-        	$this->view->category = $this->categoriesModel->populate($_POST);
+            $this->view->errors = $this->tagsModel->popErrors() ?? [];
+        	$this->view->tag = $this->tagsModel->populate($_POST);
 		}
 		
-		$this->view->render('category/create');
+		$this->view->render('tag/create');
 	}
 	
-	public function edit_action($slug)
+	public function edit_action($name)
 	{
 		if (Input::isPost())
 		{
-            $this->_verifyUpdated($slug);
-            $this->view->errors = $this->categoriesModel->popErrors() ?? [];
-        	$this->view->category = $this->categoriesModel->populate($_POST);
+            $this->_verifyUpdated($name);
+            $this->view->errors = $this->tagsModel->popErrors() ?? [];
+        	$this->view->tag = $this->tagsModel->populate($_POST);
 		}
 		else 
 		{
-			$this->view->category = $this->categoriesModel->findBySlug($slug);
+			$this->view->tag = $this->tagsModel->findByName($name);
 		}
 		
         $this->view->submitButtonValue = 'Edit';
-		$this->view->render('category/edit');
+		$this->view->render('tag/edit');
+	}
+	
+	public function delete_action($name)
+	{
+		if (Session::exists(USER_SESSION_NAME))
+		{
+			$tag = $this->tagsModel->findByName($name);
+			$tag->deleteWithDependencies();
+			Session::set('last_action', 'Tag had been removed.');
+		}
+
+        Router::redirect('tag');
 	}
 	
 	private function _verifyCreated()
 	{
-		$this->categoriesModel->populate($_POST);
+		$this->tagsModel->populate($_POST);
 		
-		if ($this->categoriesModel->check() && $this->categoriesModel->save())
+		if ($this->tagsModel->check() && $this->tagsModel->save())
         {
-            Session::set('last_action', 'New category was created successfully.');
-            Router::redirect('category');
+            Session::set('last_action', 'New tag was created successfully.');
+            Router::redirect('tag');
         }
 	}
 
-    private function _verifyUpdated($slug)
+    private function _verifyUpdated($name)
     {
-		$category = $this->categoriesModel->findBySlug($slug);
-        $this->categoriesModel->populate($category, ['id']);
-        $this->categoriesModel->populate($_POST);
+		$category = $this->tagsModel->findByName($name);
+        $this->tagsModel->populate($category, ['id']);
+        $this->tagsModel->populate($_POST);
 		
-        if ($this->categoriesModel->check(true) && $this->categoriesModel->save())
+        if ($this->tagsModel->check(true) && $this->tagsModel->save())
         {
-            Session::set('last_action', 'You have updated post successfully.');
-            Router::redirect('category');
+            Session::set('last_action', 'You have updated tag successfully.');
+            Router::redirect('tag');
         }
     }
 }
