@@ -125,7 +125,7 @@ class PostsController extends Controller
 
 		if (Session::exists(USER_SESSION_NAME) && Session::get(USER_SESSION_NAME) == $post->user_id)
 		{
-			$post->delete();
+			$post->delete('', true);
 			Session::set('last_action', 'Post had been removed.');
 		}
 
@@ -168,10 +168,9 @@ class PostsController extends Controller
     private function _verifyUpdated($slug)
     {
 		$post = $this->postsModel->findBySlug($slug);
-        $this->postsModel->populate($post, ['id', 'user_id']);
-        $this->postsModel->populate($_POST);
+        $post->populate($_POST);
 		
-        if ($this->postsModel->check(true) && $this->postsModel->save())
+        if ($post->check(true) && $post->save())
         {
             Session::set('last_action', 'You have updated post successfully.');
             Router::redirect('posts');

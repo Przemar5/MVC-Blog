@@ -5,6 +5,7 @@ class PostsModel extends Model
 {
     public $id, $label, $title, $slug, $category_id, $category = null, $tag_ids, $tags = [],
 			$tagsString = '', $body, $user_id, $created_at, $updated_at, $deleted;
+    protected $formValues = ['title', 'label', 'slug', 'category_id', 'tag_ids', 'body', 'user_id'];
 
     private $validationRules = [
         'title' => [
@@ -49,7 +50,6 @@ class PostsModel extends Model
 			'exists' => ['args' => ['users', 'id'], 'msg' => ''],
 		]
     ];
-    private $formValues = ['title', 'label', 'slug', 'category_id', 'tags', 'body', 'user_id'];
 
     public function __construct()
     {
@@ -127,6 +127,21 @@ class PostsModel extends Model
 		}
 	}
 	
+	private $dep = [
+		'binding' => [
+			'category' => 'categories',
+			'tags' => 'tags'
+		],
+		'select' => [
+			'categories' => [
+				'select' => ['*'],
+			],
+			'tags' => [
+				'select' => ['*'],
+			]
+		],
+	];
+	
 	private $dependencies = [
 		'binding' => [
 			'category' => 'categories',
@@ -149,10 +164,37 @@ class PostsModel extends Model
 					'tag_id' => 'tag_ids'
 				]
 			],
-		]
-		'delete' => [
+		],
+		'update' => [
+			'posts_categories' => [
+				'delete' => [
+					'post_id' => 'id'
+				],
+				'insert' => [
+					'post_id' => 'id',
+					'category_id' => 'category_id'
+				],
+			],
 			'posts_tags' => [
-				'delete' => ['tag_id', 'id'],
+				'delete' => [
+					'post_id' => 'id'
+				],
+				'insert' => [
+					'post_id' => 'id',
+					'tag_id' => 'tag_ids'
+				]
+			],
+		],
+		'delete' => [
+			'posts_categories' => [
+				'delete' => [
+					'post_id' => 'id'
+				]
+			],
+			'posts_tags' => [
+				'delete' => [
+ 					'post_id' => 'id'
+				]
 			]
 		]
 	];
@@ -177,21 +219,32 @@ class PostsModel extends Model
 	}
 	
 	public function actOnDependencies($mode)
-	{	
-		foreach ($this->dependencies[$mode] as $table => $methods)
+	{
+		if (empty($this->dependencies[$mode]))
 		{
-			foreach ($methods as $method => $values)
-			{
-				$model = Helper::tableToModelName($table);
-				$where = [$values[0], $this->{$values[1]}];
-				
-				if (!ModelMediator::make($model, $method . 'By', $where))
-				{
-					return false;
-				}
-			}
+			return true;
 		}
 		
+		foreach ($this->dependencies[$mode] as $table => $methods)
+		{
+			$model = Helper::tableToModelName($table);
+			
+			foreach ($methods as $method => $values)
+			{
+				$params = [];
+				
+				foreach ($values as $key => $value)
+				{
+					$params[$key] = $this->{$value};
+				}
+				
+	 			if (!ModelMediator::make($model, $method . 'By', [$params]))
+	 			{
+	 				return false;
+	 			}
+			}
+		}
+
 		return true;
 	}
 	
@@ -310,10 +363,40 @@ class PostsModel extends Model
 	{
 	    if ($this->id)
 		{
-			return $this->updatePost();
+			$postToEdit = $this->findById($this->id);
+
+			$data = [
+				'title' => $this->title,
+				'label' => $this->label,
+				'slug' => $this->slug,
+				'body' => $this->body,
+				'updated_at' => date('Y-m-d H:i:s'),
+			];
+
+			if (!$this->update($this->id, $data, true))
+			{
+				return false;
+			}
+
+			return true;
 		}
 		else
 		{
+			$data = [
+				'title' => $this->title,
+				'label' => $this->label,
+				'slug' => $this->slug,
+				'body' => $this->body,
+				'user_id' => UsersModel::currentLoggedInUserId(),
+			];
+
+			if (!$this->insert($data, true))
+			{
+				return false;
+			}
+			
+			return false;
+			
         	return $this->insertPost();
 		}
 	}
@@ -352,41 +435,6 @@ class PostsModel extends Model
 		
         return ModelMediator::make('postsTags', 'insertMultiple', [$data]);
     }
-	
-	private function updatePost()
-	{
-		$postToEdit = $this->findById($this->id);
-		
-		$data = [
-			'title' => $this->title,
-			'label' => $this->label,
-			'slug' => $this->slug,
-			'body' => $this->body,
-			'updated_at' => date('Y-m-d H:i:s'),
-		];
-		
-		if (!$this->update($this->id, $data))
-		{
-			return false;
-		}
-		
-		if (!ModelMediator::make('postsCategories', 'updateCategoryForPost', [$this->id, $this->category_id]))
-		{
-			return false;
-		}
-		
-		if (!ModelMediator::make('postsTags', 'deleteForPost', [$this->id, $this->category_id]))
-		{
-			return false;
-		}
-		
-		if (!ModelMediator::make('postsTags', 'insertMultiple', [['post_id' => $this->id, 'tag_id' => $this->tag_ids]]))
-		{
-			return false;
-		}
-		
-		return true;
-	}
 
     public function formValues()
     {

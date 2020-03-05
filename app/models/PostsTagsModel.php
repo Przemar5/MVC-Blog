@@ -7,7 +7,7 @@ class PostsTagsModel extends Model
 
     public function __construct()
     {
-        parent::__construct('posts_tags');
+        parent::__construct('posts_tags', false);
     }
 
     public function tagsForPost($postId)

@@ -16,7 +16,7 @@ class PostsCategoriesModel extends Model
 
     public function __construct()
     {
-        parent::__construct('posts_categories');
+        parent::__construct('posts_categories', false);
     }
 
     public function categoryForPost($postId, $class = true)

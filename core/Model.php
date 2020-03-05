@@ -3,12 +3,13 @@
 
 class Model
 {
-    protected $_db, $_table, $_softDelete = true, $lastSelectId, $modelMediator, $_errors = [];
+    protected $_db, $_table, $_softDelete = true, $lastSelectId, $modelMediator, $_errors = [], $formValues = [];
 
-    public function __construct($table)
+    public function __construct($table, $softDelete = true)
     {
         $this->_table = $table;
         $this->_db = Database::getInstance();
+		$this->_softDelete = $softDelete;
     }
 
     protected function loadModel($name)
@@ -25,6 +26,24 @@ class Model
     }
 
     public function populate($data, $values = [])
+    {
+		$values = (!empty($values)) ? $values : $this->formValues = [];
+		
+		if (!empty($data) && count($data))
+		{
+			foreach ($data as $key => $value)
+			{
+				if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
+				{
+					$this->{$key} = $value;
+				}
+			}
+		}
+		
+		return $this;
+    }
+
+    public function populate2($data, $values = [])
     {
 		if (!empty($data) && count($data))
 		{
@@ -280,50 +299,74 @@ class Model
         return $this->_db->selectCount($this->_table, $params);
     }
 
-    public function insert($fields)
+    public function insert($fields, $withDependencies = false)
     {
         if (empty($fields))
         {
             return false;
         }
-        return $this->_db->insert($this->_table, $fields);
+		
+        $result = $this->_db->insert($this->_table, $fields);
+		
+		if (!$withDependencies)
+		{
+			return $result;
+		}
+		
+		if ($result)
+		{
+			$this->id = $this->lastInsertId();
+			
+			return $this->actOnDependencies('insert');
+		}
     }
 
-    public function update($id, $fields)
+    public function insertBy($fields)
+    {
+        if (empty($fields))
+        {
+            return false;
+        }
+
+		$method = 'insert';
+		
+		foreach ($fields as $field => $value)
+		{
+			if (is_array($value))
+			{
+				$method = 'insertMultiple';
+			}
+		}
+		
+        return $this->_db->{$method}($this->_table, $fields);
+    }
+
+    public function update($id, $fields, $withDependencies = false, $action = 'update')
     {
         if (empty($fields) || $id == '')
         {
             return false;
         }
-        return $this->_db->update($this->_table, $id, $fields);
+        
+		$result = $this->_db->update($this->_table, $id, $fields);
+		
+		return (!empty($withDependencies)) ? $result && $this->actOnDependencies($action) : $result;
     }
 	
-	public function updateBy($fields, $params = [])
+	public function updateBy($fields, $params = [], $withDependencies = false, $action = 'update')
 	{
 		if (empty($fields))
         {
             return false;
         }
 		
-		$condition = '';
+		$condition = $this->_prepareCondition($fields);
+		$result = $this->_db->updateWhere($this->_table, $condition, $params);
 		
-		foreach ($fields as $column => $value)
-		{
-			if ($value == '' && $this->{$column} == '')
-			{
-				return false;
-			}
-
-			$value = (!empty($value)) ? $value : $this->{$column};
-			$condition .= $column . ' = ' . $value . ' AND ';
-		}
-		
-		$condition = preg_replace('/ AND $/', '', $condition);
-		
-		return $this->_db->updateWhere($this->_table, $condition, $params);
+		return (!empty($withDependencies)) ? $result && $this->actOnDependencies($action) : $result;
 	}
 
-    public function delete($id = '')
+    public function delete($id = '', $withDependencies = false)
     {
         if ($id == '' && $this->id == '')
         {
@@ -331,13 +374,15 @@ class Model
         }
 
         $id = (!$this->id == '') ? $this->id : $id;
-
+		
         if ($this->_softDelete)
         {
-            return $this->update($id, ['deleted' => 1]);
+            return $this->update($id, ['deleted' => 1], $withDependencies, 'delete');
         }
 		
-        return $this->_db->delete($this->_table, $id);
+        $result = $this->_db->delete($this->_table, $id);
+		
+		return (!empty($withDependencies)) ? $result && $this->actOnDependencies('delete') : $result;
     }
 	
 	public function deleteBy($fields)
@@ -346,9 +391,22 @@ class Model
 		{
 			return false;
 		}
+		
 		if ($this->_softDelete)
 		{
 			return $this->updateBy($fields, ['deleted' => 1]);
+		}
+		
+		$condition = $this->_prepareCondition($fields);
+		
+        return $this->_db->deleteWhere($this->_table, $condition);
+	}
+
+	private function _prepareCondition($fields)
+	{
+		if (empty($fields) || !is_array($fields))
+		{
+			return false;
 		}
 		
 		$condition = '';
@@ -360,15 +418,27 @@ class Model
 				return false;
 			}
 
-			$value = (!empty($value)) ? $value : $this->{$column};
-			$condition .= $column . ' = ' . $value . ' AND ';
+			if (is_array($value))
+			{
+				$condition .= ' (';
+
+				foreach ($value as $singleValue)
+				{
+					$condition .= $column . ' = ' . $singleValue . ' OR ';
+				}
+
+				$condition = preg_replace('/ OR $/', '', $condition);
+				$condition .= ') ';
+			}
+			else
+			{
+				$condition .= $column . ' = ' . $value . ' AND ';
+			}
 		}
 		
-		$condition = preg_replace('/ AND $/', '', $condition);
-		
-        return $this->_db->deleteWhere($this->_table, $condition);
+		return preg_replace('/ AND $/', '', $condition);
 	}
-
+	
     public function query($sql, $bind = [])
     {
         return $this->_db->query($sql, $bind);

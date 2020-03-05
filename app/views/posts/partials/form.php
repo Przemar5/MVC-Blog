@@ -6,7 +6,7 @@
     <?= HTML::inputBlock(['type' => 'text', 'id' => 'slug', 'name' => 'slug', 'value' => $this->post->slug, 'class' => 'form-control'],
         ['text' => 'Slug', 'class' => 'form-group']); ?>
     <?= HTML::selectBlock(['id' => 'category_id', 'name' => 'category_id', 'class'  => 'form-control', 'data' => $this->categories, 
-		'selected' => $this->post->category->id, 'options' => ['value' => 'id', 'text' => 'name']],
+		'selected' => $this->post->category_id, 'options' => ['value' => 'id', 'text' => 'name']],
         ['text' => 'Category', 'class' => 'form-group']); ?>
     <?= HTML::multiselectBlock(['type' => 'text', 'id' => 'tag_ids', 'name' => 'tag_ids[]', 'selected' => $this->post->tag_ids,
         'data' => $this->tags, 'class' => 'form-control multiselect', 'options' => ['value' => 'id', 'text' => 'name']],
