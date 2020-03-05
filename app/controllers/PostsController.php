@@ -13,7 +13,7 @@ class PostsController extends Controller
 	{
 		parent::__construct();
 
-		$this->loadModels(['posts', 'categories', 'postsCategories', 'tags', 'users']);
+		$this->loadModels(['posts', 'categories', 'postsCategories', 'tags', 'users', 'comments', 'posts_comments', 'comments_comments']);
 	}
 	
 	public function index_action()
@@ -79,6 +79,19 @@ class PostsController extends Controller
         {
             Router::redirect(URL . 'posts');
         }
+		
+		if (Input::isPost())
+		{
+			$this->commentsModel->populate($_POST);
+			
+			if ($this->commentsModel->check() && $this->commentsModel->save())
+			{
+				die('GOOD');
+			}
+			
+			dd($this->commentsModel->popErrors());
+			die('BAD');
+		}
 		
 		$this->view->post->prepareForDisplay();
         $this->view->render('posts/show');

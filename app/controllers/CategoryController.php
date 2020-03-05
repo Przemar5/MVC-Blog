@@ -20,7 +20,7 @@ class CategoryController extends Controller
 	{
 		if ($this->view->category = $this->categoriesModel->findBySlug($slug))
 		{
-			$this->view->posts = $this->postsCategoriesModel->postsByCategoryId($this->view->category->id);
+			$this->view->posts = $this->postsCategoriesModel->postsForCategoryId($this->view->category->id);
 			$this->view->render('category/show');
 		}
 		else 

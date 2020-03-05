@@ -4,7 +4,8 @@
 class CategoriesModel extends Model
 {
     public $id, $name, $slug, $deleted, $numOfPosts;
-
+	protected $formValues = ['name', 'slug'];
+	
 	private $validationRules = [
         'name' => [
             'required' => ['msg' => 'Category name is required.'],

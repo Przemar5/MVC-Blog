@@ -23,6 +23,13 @@ class HTML
         return '<textarea' . $attrs . '>' . $text . '</textarea>';
     }
 	
+	public static function hidden($inputData)
+	{
+        $attrs = self::stringifyAttrs($inputData);
+
+        return '<input type="hidden"' . $attrs . '>';
+	}
+	
 	public static function reset($inputData)
 	{
 		$attrs = self::stringifyAttrs($inputData);

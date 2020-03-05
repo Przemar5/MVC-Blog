@@ -37,8 +37,8 @@ class PostsModel extends Model
         ],
 		'tag_ids' => [
 			'multiple' => true,
-			'numeric' => ['msg' => 'num'],
-			'exists' => ['args' => ['tags', 'id'], 'msg' => 'exists'],
+			'numeric' => ['msg' => ''],
+			'exists' => ['args' => ['tags', 'id'], 'msg' => ''],
 		],
         'body' => [
             'required' => ['msg' => 'Post body is required.'],
@@ -50,6 +50,78 @@ class PostsModel extends Model
 			'exists' => ['args' => ['users', 'id'], 'msg' => ''],
 		]
     ];
+	
+//	private $dep = [
+//		'binding' => [
+//			'category' => 'categories',
+//			'tags' => 'tags'
+//		],
+//		'select' => [
+//			'categories' => [
+//				'select' => ['*'],
+//			],
+//			'tags' => [
+//				'select' => ['*'],
+//			]
+//		],
+//	];
+	
+	private $dependencies = [
+		'binding' => [
+			'category' => 'categories',
+			'tags' => 'tags'
+		],
+		'select' => [
+			'categories' => ['*'],
+			'tags' => ['*']
+		],
+		'insert' => [
+			'posts_categories' => [
+				'insert' => [
+					'post_id' => 'id',
+					'category_id' => 'category_id'
+				],
+			],
+			'posts_tags' => [
+				'insert' => [
+					'post_id' => 'id',
+					'tag_id' => 'tag_ids'
+				]
+			],
+		],
+		'update' => [
+			'posts_categories' => [
+				'delete' => [
+					'post_id' => 'id'
+				],
+				'insert' => [
+					'post_id' => 'id',
+					'category_id' => 'category_id'
+				],
+			],
+			'posts_tags' => [
+				'delete' => [
+					'post_id' => 'id'
+				],
+				'insert' => [
+					'post_id' => 'id',
+					'tag_id' => 'tag_ids'
+				]
+			],
+		],
+		'delete' => [
+			'posts_categories' => [
+				'delete' => [
+					'post_id' => 'id'
+				]
+			],
+			'posts_tags' => [
+				'delete' => [
+ 					'post_id' => 'id'
+				]
+			]
+		]
+	];
 
     public function __construct()
     {
@@ -126,78 +198,6 @@ class PostsModel extends Model
 			unset($this->validationRules[$column]['unique']['args'][2]);
 		}
 	}
-	
-	private $dep = [
-		'binding' => [
-			'category' => 'categories',
-			'tags' => 'tags'
-		],
-		'select' => [
-			'categories' => [
-				'select' => ['*'],
-			],
-			'tags' => [
-				'select' => ['*'],
-			]
-		],
-	];
-	
-	private $dependencies = [
-		'binding' => [
-			'category' => 'categories',
-			'tags' => 'tags'
-		],
-		'select' => [
-			'categories' => ['*'],
-			'tags' => ['*']
-		],
-		'insert' => [
-			'posts_categories' => [
-				'insert' => [
-					'post_id' => 'id',
-					'category_id' => 'category_id'
-				],
-			],
-			'posts_tags' => [
-				'insert' => [
-					'post_id' => 'id',
-					'tag_id' => 'tag_ids'
-				]
-			],
-		],
-		'update' => [
-			'posts_categories' => [
-				'delete' => [
-					'post_id' => 'id'
-				],
-				'insert' => [
-					'post_id' => 'id',
-					'category_id' => 'category_id'
-				],
-			],
-			'posts_tags' => [
-				'delete' => [
-					'post_id' => 'id'
-				],
-				'insert' => [
-					'post_id' => 'id',
-					'tag_id' => 'tag_ids'
-				]
-			],
-		],
-		'delete' => [
-			'posts_categories' => [
-				'delete' => [
-					'post_id' => 'id'
-				]
-			],
-			'posts_tags' => [
-				'delete' => [
- 					'post_id' => 'id'
-				]
-			]
-		]
-	];
 	
 	public function getAdditionalInfo()
 	{
@@ -395,9 +395,7 @@ class PostsModel extends Model
 				return false;
 			}
 			
-			return false;
-			
-        	return $this->insertPost();
+			return true;
 		}
 	}
 

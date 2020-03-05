@@ -27,13 +27,13 @@ class Model
 
     public function populate($data, $values = [])
     {
-		$values = (!empty($values)) ? $values : $this->formValues = [];
+		$values = (!empty($values)) ? $values : $this->formValues;
 		
 		if (!empty($data) && count($data))
 		{
 			foreach ($data as $key => $value)
 			{
-				if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
+				if (property_exists($this, $key) && in_array($key, $values))
 				{
 					$this->{$key} = $value;
 				}

@@ -7,6 +7,11 @@ class UsersModel extends Model
             $password, $email, $created_at, $updated_at, $deleted, $errors;
 
     private $loginValidationRules = [
+		'id' => [
+			'required' => ['msg' => ''],
+			'max' => ['args' => [11], 'msg' => ''],
+			'numeric' => ['msg' => ''],
+		],
         'username' => [
             'required' => ['msg' => 'Username is required.'],
             'min' => ['args' => [8], 'msg' => 'Username must be at least 8 characters.'],
@@ -62,5 +67,24 @@ class UsersModel extends Model
 	public static function currentLoggedInUserId()
 	{
 		return Session::get(USER_SESSION_NAME);
+	}
+	
+	public function loggedInUser() 
+	{
+		$this->validation = new Validator;
+
+		$id = self::currentLoggedInUserId();
+		
+		if (!$this->validation->check(['id' => $id], $this->loginValidationRules))
+		{
+			return false;
+		}
+		
+		return $this->findById(self::currentLoggedInUserId(), [], true);
+	}
+	
+	public static function getLoggedInUser()
+	{
+		return ModelMediator::make('users', 'loggedInUser');
 	}
 }
