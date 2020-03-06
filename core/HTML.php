@@ -7,6 +7,14 @@ class HTML
 	{
 		self::getAttrsString($data);
 	}
+
+	public static function link($inputData)
+	{
+	    $linkText = self::pop($inputData['text']);
+	    $attrs = self::stringifyAttrs($inputData);
+
+        return '<a' . $attrs . '/>' . $linkText . '</a>';
+	}
 	
 	public static function input($inputData)
 	{
@@ -28,6 +36,13 @@ class HTML
         $attrs = self::stringifyAttrs($inputData);
 
         return '<input type="hidden"' . $attrs . '>';
+	}
+
+	public static function button($inputData)
+	{
+		$attrs = self::stringifyAttrs($inputData);
+
+		return '<input type="button"' . $attrs . '/>';
 	}
 	
 	public static function reset($inputData)
@@ -121,6 +136,11 @@ class HTML
 	{
         return self::block('textarea', $inputData, $blockData);
 	}
+
+	public static function buttonBlock($inputData, $blockData)
+    {
+        return self::block('button', $inputData, $blockData);
+    }
 
 	public static function submitBlock($inputData, $blockData)
     {

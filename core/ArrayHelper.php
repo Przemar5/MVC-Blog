@@ -3,6 +3,11 @@
 
 class ArrayHelper
 {
+    public static function last($arr)
+    {
+        return $arr[count($arr) - 1];
+    }
+
     public static function flattenSingles($array = [], $objectMode = false)
     {
         $result = [];

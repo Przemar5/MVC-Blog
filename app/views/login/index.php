@@ -10,7 +10,7 @@
 
 		<h1 class="text-center">Login</h1>
 		
-		<form action="<?= URL; ?>login/verify" method="post" class="card-body">
+		<form method="post" class="card-body">
 			<?= HTML::inputBlock(['type' => 'text', 'id' => 'username', 'name' => 'username', 'class' => 'form-control'],
 								   ['text' => 'Username', 'class' => 'form-group']); ?>
 			<?= HTML::inputBlock(['type' => 'password', 'id' => 'password', 'name' => 'password', 'class' => 'form-control'],

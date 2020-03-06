@@ -7,6 +7,11 @@ class URL
 	{
 		return 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	}
+
+	public static function actualUrlWithoutGet()
+	{
+	    return preg_replace('/\?[^\/]*$/', '', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+	}
 	
 	public static function splitUrl($get)
 	{

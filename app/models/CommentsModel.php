@@ -3,7 +3,7 @@
 
 class CommentsModel extends Model
 {
-    public $id, $username, $email, $message, $post_id, $user_id, $created_at, $updated_at, $deleted, $parent_id, $child_id;
+    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_comment_id;
     protected $formValues = ['username', 'email', 'message', 'post_id'];
 
     private $validationRules = [
@@ -19,8 +19,9 @@ class CommentsModel extends Model
             'max' => ['args' => [150], 'msg' => 'Email address cannot be longer than 150 characters.'],
             'regex' => ['args' => ['[0-9a-zA-Z \@\+\/\?\!\$\_\-\.\,]+'], 'msg' => 'Email address contains illegal characters.'],
 		],
-        'messege' => [
+        'message' => [
             'required' => ['msg' => 'Comment body is required.'],
+            'min' => ['args' => [6], 'msg' => 'Email address must be equal or longer than 6 characters.'],
         ],
 		'post_id' => [
 			'required' => ['msg' => 'req'],
@@ -47,13 +48,7 @@ class CommentsModel extends Model
 			'posts_comments' => [
 				'insert' => [
 					'post_id' => 'post_id',
-					'comment_id' => 'id'
-				],
-			],
-			'comments_comments' => [
-				'insert' => [
-					'parent_id' => 'parent_id',
-					'child_id' => 'id'
+					'comment_id' => 'id',
 				],
 			],
 		],
@@ -61,7 +56,7 @@ class CommentsModel extends Model
 
     public function __construct()
     {
-        parent::__construct('posts');
+        parent::__construct('comments');
     }
 
     public function check($update = false)
@@ -81,8 +76,8 @@ class CommentsModel extends Model
 		{
 			$this->username = $user->username;
 			$this->email = $user->email;
+			$this->user_id = $user->id;
 		}
-		$this->user_id = $user->id ?? null;
 		
         $this->validation->check([
             'username' => $this->username,
@@ -98,7 +93,7 @@ class CommentsModel extends Model
         else
         {
             $this->_errors = $this->validation->errors();
-			
+
             return false;
         }
     }
@@ -146,8 +141,8 @@ class CommentsModel extends Model
 		}
 		else 
 		{
-			$this->parent_id
-			
+			$this->parent_id = null;
+
 			$data = [
 				'username' => $this->username,
 				'email' => $this->email,
@@ -160,7 +155,7 @@ class CommentsModel extends Model
 			{
 				return false;
 			}
-			
+
 			return true;
 		}
 	}

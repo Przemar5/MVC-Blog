@@ -43,22 +43,6 @@ class Model
 		return $this;
     }
 
-    public function populate2($data, $values = [])
-    {
-		if (!empty($data) && count($data))
-		{
-			foreach ($data as $key => $value)
-			{
-				if (property_exists($this, $key) && (empty($values) || in_array($key, $values)))
-				{
-					$this->{$key} = $value;
-				}
-			}
-		}
-		
-		return $this;
-    }
-
     public function find($params = [], $class = true, $additionalInfo = true)
     {
 		$class = ($class) ? get_class($this) : false;

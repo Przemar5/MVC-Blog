@@ -7,7 +7,8 @@ class View
 				$_body, 
 				$_siteTitle = SITE_TITLE, 
 				$_outputBuffer, 
-				$_layout = DEFAULT_LAYOUT;
+				$_layout = DEFAULT_LAYOUT,
+				$_scripts = [];
 	
 	public function __construct()
 	{
@@ -29,6 +30,42 @@ class View
 	public function include($file)
     {
         include_once ROOT . DS . 'app' . DS . 'views' . DS . 'layouts' . DS . $file . '.php';
+    }
+
+    public function setScripts($names)
+    {
+        $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
+        $path = PathHelper::parentFolders($directory);
+
+        if (!empty($names))
+        {
+            if (is_array($names))
+            {
+                foreach ($names as $name)
+                {
+                    $this->_scripts[] = URL . $path . DS . 'js' . DS . $name . '.js';
+                }
+            }
+            else
+            {
+                $this->_scripts[] = URL . $path . DS . 'js' . DS . $names . '.js';
+            }
+        }
+    }
+
+    public function scripts()
+    {
+        $scripts = '';
+
+        if (!empty($this->_scripts))
+        {
+            foreach ($this->_scripts as $link)
+            {
+                $scripts .= '<script type="text/javascript" src="' . $link . '"></script>';
+            }
+        }
+
+        return $scripts;
     }
 	
 	public function content($type)

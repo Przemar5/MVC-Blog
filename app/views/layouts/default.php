@@ -9,12 +9,12 @@
 		
 		<!-- Bootstrap CSS -->
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-		<link rel="stylesheet" href="<?= ROOT; ?>css/bootstrap.min.css">
+		<link rel="stylesheet" href="<?= URL; ?>css/bootstrap.min.css">
 
-		<script src="<?= ROOT; ?>js/jquery/jquery-3.4.1.min.js"></script>
-		<script src="<?= ROOT; ?>js/bootstrap.bundle.min.js"></script>
+		<script src="<?= URL; ?>js/jquery/jquery-3.4.1.min.js"></script>
+		<script src="<?= URL; ?>js/bootstrap.bundle.min.js"></script>
 		
-		<link rel="stylesheet" href="<?= ROOT; ?>css/custom.css">
+		<link rel="stylesheet" href="<?= URL; ?>css/custom.css">
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css">
@@ -29,6 +29,8 @@
 
   			<?= $this->content('body'); ?>
   		</div>
-  		
+
+  		<?= $this->scripts(); ?>
+
   	</body>
 </html>

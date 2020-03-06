@@ -152,7 +152,7 @@ class Validator
 	
 	public function min($value, $min)
 	{
-		return strlen($value) >= $min;
+	    return strlen($value) >= $min;
 	}
 	
 	public function max($value, $max)

@@ -1,4 +1,5 @@
 <?php $this->setSiteTitle($this->post->label); ?>
+<?php $this->setScripts('load_comments'); ?>
 <?php $this->start('head'); ?>
 
 <?php $this->end(); ?>
@@ -38,19 +39,15 @@
     <div class="fb-comments" data-href="https://developers.facebook.com/docs/plugins/comments#configurator" data-width="" data-numposts="5"></div>
     
 -->
-    
-    <form method="post">
-    	<?= HTML::inputBlock(['type' => 'text', 'id' => 'username', 'name' => 'username', 'class' => 'form-control'],
-			['text' => 'Username', 'class' => 'form-group']); ?>
-		<?= HTML::inputBlock(['type' => 'email', 'id' => 'email', 'name' => 'email', 'class' => 'form-control'],
-			['text' => 'Email', 'class' => 'form-group']); ?>
-		<?= HTML::textareaBlock(['id' => 'message', 'name' => 'message', 'rows' => '10', 'class' => 'form-control'],
-			['text' => 'Comment', 'class' => 'form-group']); ?>
-		<?= HTML::hidden(['name' => 'post_id', 'value' => $this->post->id]); ?>
-		<?= HTML::hidden(['name' => 'parent_id', 'value' => $this->post->id]); ?>
-		<?= HTML::submit(['value' => 'Create', 'class' => 'btn btn-block btn-primary']); ?>
-		<?= HTML::reset(['value' => 'Clear', 'class' => 'btn btn-block btn-danger']); ?>
-    </form>
+    <?= HTML::errors($this->errors ?? ''); ?>
+
+    <?php $this->partial('comments', 'form'); ?>
+
+    <hr class="my-5">
+
+    <h2 class="mb-5">Comments</h2>
+
+    <?php $this->partial('comments', 'comments'); ?>
 </div>
 
 <?php $this->end(); ?>

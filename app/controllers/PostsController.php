@@ -4,7 +4,8 @@
 class PostsController extends Controller
 {
     private const POSTS_PER_PAGE = 5;
-    private $_currentPage = 1, $_tagNames, $_category, $_params, $_ids;
+    private const COMMENTS_PER_POST = 5;
+    private $_currentPage = 1, $_tagNames, $_category, $_params, $_ids, $_lastCommentId = 0, $_commentsNumber = self::COMMENTS_PER_POST;
 	private $_urlParams = [
 		'tag' => ['tags', 'name']
 	];
@@ -15,24 +16,24 @@ class PostsController extends Controller
 
 		$this->loadModels(['posts', 'categories', 'postsCategories', 'tags', 'users', 'comments', 'posts_comments', 'comments_comments']);
 	}
-	
+
 	public function index_action()
 	{
 	    $this->_currentPage = (Input::get('page')) ? Input::get('page') : 1;
-		
+
 		if (Input::isGet())
 		{
 			if ($this->extractGet('tag', '_tagNames', true))
 			{
 				$this->_findPosts();
 			}
-			else 
+			else
 			{
 				$this->_ids = $this->postsModel->getIds();
 				$this->view->posts = $this->postsModel->lastFrom(self::POSTS_PER_PAGE, $this->_getPostIdOffset());
 			}
 		}
-		
+
 	    $this->view->pagination = $this->_preparePagination();
         $this->postsModel->lastSelectId();
 
@@ -41,7 +42,7 @@ class PostsController extends Controller
 
 		$this->view->render('posts/index');
 	}
-	
+
 	private function extractGet($get, $property, $multiple = false)
 	{
 		if (empty($_GET[$get]))
@@ -50,7 +51,7 @@ class PostsController extends Controller
 		}
 		return $this->{$property} = Input::get($get);
 	}
-	
+
 	private function _findPosts()
 	{
 		if (!empty($this->_tagNames))
@@ -59,7 +60,7 @@ class PostsController extends Controller
 			{
 				Router::redirect(URL . 'posts');
 			}
-			
+
 			$params = [
 				'data' => [
 					'tags' => [
@@ -67,7 +68,7 @@ class PostsController extends Controller
 					]
 				]
 			];
-			
+
 			$this->_ids = $this->postsModel->idDescFor($params);
 			$this->view->posts = $this->postsModel->lastFromFor(self::POSTS_PER_PAGE, $this->_getPostIdOffset(), $params);
 		}
@@ -79,21 +80,35 @@ class PostsController extends Controller
         {
             Router::redirect(URL . 'posts');
         }
-		
+
+        if (Input::isGet())
+        {
+            if (!$this->extractGet('comments', '_commentsNumber', true))
+            {
+                $this->_commentsNumber = self::COMMENTS_PER_POST;
+            }
+        }
+
 		if (Input::isPost())
 		{
 			$this->commentsModel->populate($_POST);
-			
+
 			if ($this->commentsModel->check() && $this->commentsModel->save())
 			{
-				die('GOOD');
+				Session::set('last_action', 'Your comment had been added successfully.');
 			}
-			
-			dd($this->commentsModel->popErrors());
-			die('BAD');
+			else
+			{
+			    Session::set('last_action', "Your comment wasn't added.");
+			    $this->view->errors = $this->commentsModel->popErrors();
+			}
 		}
-		
+
 		$this->view->post->prepareForDisplay();
+		//$this->view->comments = $this->commentsModel->lastFrom(3, $this->_lastCommentId, ['conditions' => '']);
+		$this->view->comments = $this->commentsModel->lastFrom($this->_commentsNumber, $this->_lastCommentId, ['conditions' => '']);
+		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;
+		$this->view->pagination = $this->_prepareLoadMore();
         $this->view->render('posts/show');
     }
 
@@ -120,7 +135,7 @@ class PostsController extends Controller
             $this->view->errors = $this->postsModel->popErrors() ?? [];
 			$this->view->post = $this->postsModel->populate($_POST);
         }
-		else 
+		else
 		{
 			$this->view->post = $this->postsModel->findBySlug($slug);
 		}
@@ -131,7 +146,7 @@ class PostsController extends Controller
         $this->view->tags = $this->tagsModel->all();
         $this->view->render('posts/edit');
     }
-	
+
 	public function delete_action($slug)
 	{
 		$post = $this->postsModel->findBySlug($slug);
@@ -144,22 +159,22 @@ class PostsController extends Controller
 
         Router::redirect('posts');
 	}
-	
+
 	public function category_action($slug)
 	{
 		$this->_currentPage = (Input::get('page')) ? Input::get('page') : 1;
-		
+
 		if (!$this->view->category = $this->categoriesModel->findBySlug($slug))
 		{
 			$this->view->render('error/404');
 			exit;
 		}
-		
-		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');		
-		$this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE, 
+
+		$postIds = $this->postsCategoriesModel->postIdsByCategoryId($this->view->category->id, 'post_id DESC');
+		$this->view->posts = $this->postsModel->lastFromByCategoryId(self::POSTS_PER_PAGE,
 													   				$this->view->category->id, true);
 		$this->view->pagination = $this->_preparePagination();
-		
+
 		ArrayHelper::callMethod($this->view->posts, 'getAdditionalInfo');
 		ArrayHelper::callMethod($this->view->posts, 'truncateText', [600]);
 		ArrayHelper::callMethod($this->view->posts, 'prepareForDisplay');
@@ -182,7 +197,7 @@ class PostsController extends Controller
     {
 		$post = $this->postsModel->findBySlug($slug);
         $post->populate($_POST);
-		
+
         if ($post->check(true) && $post->save())
         {
             Session::set('last_action', 'You have updated post successfully.');
@@ -193,17 +208,33 @@ class PostsController extends Controller
     private function _preparePagination()
     {
 		$tabsNumber = ceil(count($this->_ids) / self::POSTS_PER_PAGE);
-		
+
 		if (Input::isGet() && !empty($_GET['page']))
 		{
 			list($urlStart, $urlEnd) = URL::splitUrl('page');
-			
+
 			return HTML::pagination($tabsNumber, (int) $this->_currentPage, $urlStart, $urlEnd);
 		}
-		else 
+		else
 		{
 			return HTML::pagination($tabsNumber, (int) $this->_currentPage, URL::actualUrl());
 		}
+    }
+
+    public function load_comments_action()
+    {
+        return 'WORKS';
+
+		$this->view->comments = $this->commentsModel->lastFrom($this->_commentsNumber, $this->_lastCommentId, ['conditions' => '']);
+		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;
+		$this->view->pagination = $this->_prepareLoadMore();
+    }
+
+    private function _prepareLoadMore()
+    {
+        $loadCommentsUrl = URL::actualUrlWithoutGet() . '?comments=' . ($this->_commentsNumber + self::COMMENTS_PER_POST);
+
+		return HTML::link(['text' => 'Load More Comments', 'id' => 'loadComments', 'class' => 'btn btn-block btn-primary', 'href' => $loadCommentsUrl]);
     }
 
     private function _getPostIdOffset($params = [], $model = 'postsModel', $method = 'getIds')

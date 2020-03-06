@@ -1,0 +1,9 @@
+.red {
+	color: red;
+}
+
+.form-errors {
+	margin: .5rem;
+	border-radius: 5px;
+	box-shadow: 4px 4px 10px 0 rgba(50,50,50,0.5);
+}

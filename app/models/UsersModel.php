@@ -5,6 +5,7 @@ class UsersModel extends Model
 {
     public $id, $first_name, $last_name, $username,
             $password, $email, $created_at, $updated_at, $deleted, $errors;
+    protected $formValues = ['username', 'password'];
 
     private $loginValidationRules = [
 		'id' => [
@@ -49,7 +50,7 @@ class UsersModel extends Model
 
             if ($user && $user->password === $this->password)
             {
-                $this->populate($user);
+                $this->populate($user, get_object_vars($user));
 
                 return true;
             }
@@ -63,6 +64,11 @@ class UsersModel extends Model
             $this->errors = $this->validation->errors();
         }
     }
+
+    public function verify()
+    {
+
+    }
 	
 	public static function currentLoggedInUserId()
 	{
@@ -74,7 +80,7 @@ class UsersModel extends Model
 		$this->validation = new Validator;
 
 		$id = self::currentLoggedInUserId();
-		
+
 		if (!$this->validation->check(['id' => $id], $this->loginValidationRules))
 		{
 			return false;
