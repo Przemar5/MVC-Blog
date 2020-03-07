@@ -5,7 +5,8 @@ class PostsController extends Controller
 {
     private const POSTS_PER_PAGE = 5;
     private const COMMENTS_PER_POST = 5;
-    private $_currentPage = 1, $_tagNames, $_category, $_params, $_ids, $_lastCommentId = 0, $_commentsNumber = self::COMMENTS_PER_POST;
+    private $_currentPage = 1, $_tagNames, $_category, $_params, $_ids, $_commentIds,
+            $_lastCommentId = 0, $_commentsNumber = self::COMMENTS_PER_POST;
 	private $_urlParams = [
 		'tag' => ['tags', 'name']
 	];
@@ -23,7 +24,7 @@ class PostsController extends Controller
 
 		if (Input::isGet())
 		{
-			if ($this->extractGet('tag', '_tagNames', true))
+			if ($this->_extractGet('tag', '_tagNames', true))
 			{
 				$this->_findPosts();
 			}
@@ -43,7 +44,7 @@ class PostsController extends Controller
 		$this->view->render('posts/index');
 	}
 
-	private function extractGet($get, $property, $multiple = false)
+	private function _extractGet($get, $property, $multiple = false)
 	{
 		if (empty($_GET[$get]))
 		{
@@ -74,6 +75,11 @@ class PostsController extends Controller
 		}
 	}
 
+	private function _findComments()
+	{
+
+	}
+
 	public function show_action($slug)
     {
         if (!$this->view->post = $this->postsModel->findBySlug($slug))
@@ -83,7 +89,7 @@ class PostsController extends Controller
 
         if (Input::isGet())
         {
-            if (!$this->extractGet('comments', '_commentsNumber', true))
+            if (!$this->_extractGet('comments', '_commentsNumber', true))
             {
                 $this->_commentsNumber = self::COMMENTS_PER_POST;
             }
@@ -105,11 +111,16 @@ class PostsController extends Controller
 		}
 
 		$this->view->post->prepareForDisplay();
-		//$this->view->comments = $this->commentsModel->lastFrom(3, $this->_lastCommentId, ['conditions' => '']);
-		$this->view->comments = $this->commentsModel->lastFrom($this->_commentsNumber, $this->_lastCommentId, ['conditions' => '']);
+		$this->_commentIds = $this->commentsModel->idDescForPost($this->view->post->id);
+		$this->view->comments = $this->commentsModel->lastForPost($this->_commentsNumber, $this->view->post->id);
 		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;
-		$this->view->pagination = $this->_prepareLoadMore();
+		$this->view->loadMore = $this->_prepareLoadMore();
         $this->view->render('posts/show');
+    }
+
+    public function load_more_comments($slug, $number)
+    {
+        echo 'WORKS';
     }
 
     public function create_action()
@@ -223,7 +234,15 @@ class PostsController extends Controller
 
     public function load_comments_action()
     {
-        return 'WORKS';
+        if (Input::isGet())
+        {
+            if ($this->_extractGet('comments', '_commentsNumber', true) && $this->_extractGet('post', 'postsModel->slug', true))
+            {
+                echo $this->_commentsNumber;
+            }
+        }
+
+        //echo $_GET['comments'];
 
 		$this->view->comments = $this->commentsModel->lastFrom($this->_commentsNumber, $this->_lastCommentId, ['conditions' => '']);
 		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;

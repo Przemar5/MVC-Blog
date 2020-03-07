@@ -9,7 +9,8 @@ class ModelMediator
 		[
 			'posts' => 'id', 
 			'posts_tags' => 'post_id',
-			'posts_categories' => 'post_id'
+			'posts_categories' => 'post_id',
+			'posts_comments' => 'post_id'
 		],
 		[
 			'posts_tags' => 'tag_id', 
@@ -19,6 +20,10 @@ class ModelMediator
 			'posts_categories' => 'category_id', 
 			'categories' => 'id'
 		],
+		[
+		    'posts_comments' => 'comment_id',
+		    'comments' => 'id'
+		]
 	];
 	
 	public static function loadModel($name)

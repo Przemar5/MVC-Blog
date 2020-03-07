@@ -128,7 +128,7 @@ class Database
     public function query($sql, $params = [], $class = false)
     {
         $this->_error = false;
-		
+
 		try
 		{
 			if ($this->_query = $this->_pdo->prepare($sql))

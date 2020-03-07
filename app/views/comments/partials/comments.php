@@ -35,5 +35,5 @@
 </div>
 
 <?php if (!empty($this->comments)): ?>
-	<?= $this->pagination; ?>
+	<?= $this->loadMore; ?>
 <?php endif; ?>

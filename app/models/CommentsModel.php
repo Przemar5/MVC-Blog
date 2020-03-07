@@ -37,12 +37,10 @@ class CommentsModel extends Model
 	
 	private $dependencies = [
 		'binding' => [
-			'category' => 'categories',
-			'tags' => 'tags'
+			'post_id' => 'posts',
 		],
 		'select' => [
 			'categories' => ['*'],
-			'tags' => ['*']
 		],
 		'insert' => [
 			'posts_comments' => [
@@ -189,4 +187,60 @@ class CommentsModel extends Model
 
 		return true;
 	}
+/*
+	public function commentsForPostDesc($limit, $post)
+	{
+	    $params['order'] = 'id DESC';
+    	$params['limit'] = $limit;
+
+        dd(func_get_args());
+	}
+*/
+	public function lastFromFor($limit, $offset, $params = [])
+	{
+		foreach ($params['data'] as $table => $column)
+		{
+			$path[$table] = GraphHelper::findPath(ModelMediator::$refs, $table, $this->_table, key($column));
+		}
+
+		$params['order'] = 'id DESC';
+		$params['limit'] = $limit;
+		$params['from'] = $offset;
+
+		return $this->complexFind($path, $params);
+	}
+
+	public function idDescFor($params)
+	{
+		foreach ($params['data'] as $table => $column)
+		{
+			$path[$table] = GraphHelper::findPath(ModelMediator::$refs, $table, $this->_table, key($column));
+		}
+
+        $params['values'] = 'id';
+		$params['order'] = 'id DESC';
+
+		return ArrayHelper::flattenSingles($this->complexFind($path, $params, false));
+	}
+
+    public function idDescForPost($postId)
+    {
+        $sql = 'SELECT id FROM comments WHERE id IN (SELECT comment_id FROM posts_comments WHERE post_id = ?) ORDER BY id DESC';
+
+        return ArrayHelper::flattenSingles($this->_db->query($sql, [$postId])->results());
+    }
+
+    public function lastForPost($limit, $postId)
+    {
+        $sql = 'SELECT * FROM comments WHERE id IN (SELECT comment_id FROM posts_comments WHERE post_id = ?) ORDER BY id DESC LIMIT ?';
+
+        return $this->_db->query($sql, [$postId, $limit], get_class($this))->results();
+    }
+
+    public function lastFromForPost($limit, $offset, $postId)
+    {
+        $sql = 'SELECT * FROM comments WHERE id IN (SELECT comment_id FROM posts_comments WHERE post_id = ?) AND id < ? ORDER BY id DESC LIMIT ?';
+
+        return $this->_db->query($sql, [$postId, $offset, $limit], get_class($this))->results();
+    }
 }

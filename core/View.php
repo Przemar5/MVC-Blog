@@ -36,6 +36,7 @@ class View
     {
         $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
         $path = PathHelper::parentFolders($directory);
+        $path = implode('/', explode(DS, $path));
 
         if (!empty($names))
         {
@@ -43,12 +44,14 @@ class View
             {
                 foreach ($names as $name)
                 {
-                    $this->_scripts[] = URL . $path . DS . 'js' . DS . $name . '.js';
+                    $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name . '.js';
+                    //$this->_scripts[] = 'js' . '/' . $name . '.js';
                 }
             }
             else
             {
-                $this->_scripts[] = URL . $path . DS . 'js' . DS . $names . '.js';
+                $this->_scripts[] = URL . $path . 'js' . '/' . $names . '.js';
+                //$this->_scripts[] = 'js' . '/' . $names . '.js';
             }
         }
     }

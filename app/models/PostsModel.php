@@ -278,25 +278,27 @@ class PostsModel extends Model
 		return $this->tags;
 	}
 
-    public function findBySlug($slug, $values = '*')
+    public function findBySlug($slug, $values = '', $class = true)
     {
         $validation = new Validator;
-		
+
         if (!$validation->check(['slug' => $slug], $this->validationRules['slug'], false))
         {
 			return false;
         }
-		
+        d(__CLASS__);
+        d(__LINE__);
+
 		$dataToFind = [
-			'values' => $values,
+			'values' => (!empty($values)) ? $values : '*',
 			'conditions' => ['slug' => $slug]
 		];
-		
-		if (!$post = $this->findFirst($dataToFind))
+
+		if (!$post = $this->findFirst($dataToFind, $class))
 		{
 			return false;
 		}
-		
+
 		$post->getAdditionalInfo();
 		
 		return $post;

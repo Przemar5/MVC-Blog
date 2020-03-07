@@ -68,9 +68,9 @@ class Model
     public function findFirst($params = [], $class = true, $additionalInfo = true)
     {
 		$class = ($class) ? get_class($this) : false;
-		
+
 		$result = $this->_db->findFirst($this->_table, $params, $class);
-		
+
 		if ($additionalInfo)
 		{
 			if (!empty($result))
@@ -81,7 +81,7 @@ class Model
 				}
 			}
 		}
-		
+
         return $result;
     }
 
@@ -235,7 +235,6 @@ class Model
 			
 			while ($bracketsCounter > 1)
 			{
-				
 				$sql .= ')';
 				$bracketsCounter--;
 			}
