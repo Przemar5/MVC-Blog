@@ -286,8 +286,6 @@ class PostsModel extends Model
         {
 			return false;
         }
-        d(__CLASS__);
-        d(__LINE__);
 
 		$dataToFind = [
 			'values' => (!empty($values)) ? $values : '*',
@@ -299,8 +297,11 @@ class PostsModel extends Model
 			return false;
 		}
 
-		$post->getAdditionalInfo();
-		
+        if (get_class($post) === get_class($this))
+        {
+		    $post->getAdditionalInfo();
+        }
+
 		return $post;
     }
 	

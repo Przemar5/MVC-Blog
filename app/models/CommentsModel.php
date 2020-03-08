@@ -36,12 +36,12 @@ class CommentsModel extends Model
     ];
 	
 	private $dependencies = [
-		'binding' => [
-			'post_id' => 'posts',
+		/*'binding' => [
+			'authorName' => 'users',
 		],
 		'select' => [
-			'categories' => ['*'],
-		],
+			'users' => ['name', 'email'],
+		],*/
 		'insert' => [
 			'posts_comments' => [
 				'insert' => [
@@ -157,6 +157,27 @@ class CommentsModel extends Model
 			return true;
 		}
 	}
+
+	public function getAdditionalInfo()
+    {
+        if (empty($this->id))
+        {
+            return false;
+        }
+
+        foreach ($this->dependencies['binding'] as $property => $object)
+        {
+            if (empty($this->{$property}))
+            {
+            /*
+                $this->{$property} = ModelMediator::make($this->_table . $object,
+                                                         $property . 'ForPost',
+                                                         [$this->id,
+                                                          ['values' => $this->dependencies['select'][$object]]]);
+                                                          */
+            }
+        }
+    }
 	
 	public function actOnDependencies($mode)
 	{

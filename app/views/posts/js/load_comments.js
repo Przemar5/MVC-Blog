@@ -9,11 +9,8 @@ $(document).ready(function() {
 
 
     $('#loadComments').click(function(e) {
-        alert(1)
-        re = /((?<=\/)posts\/show\/)|(\?comments\=)/i;
-        alert(this);
-
-        url = this.getAttribute('href').split(re);
+        var re = /((?<=\/)posts\/show\/)|(\?comments\=)/i;
+        var url = this.getAttribute('href').split(re);
 
         urlParts = url.filter(function(e) {
                 return e != undefined;
@@ -23,46 +20,67 @@ $(document).ready(function() {
                 return !e.match(re);
             });
 
-        console.log(urlParts);
-
-
         // alert(urlParts[0] + 'comments/load/' + urlParts[1] + '/' + urlParts[2])
-        var xhr = $.get(urlParts[0] + 'comments/load/' + urlParts[1] + '/' + urlParts[2], function() {
+        xhr = $.get(urlParts[0] + 'comments/load/' + urlParts[1] + '/' + urlParts[2], function() {
                 alert( "success" );
             })
             .done(function(data) {
-                alert( "second success" );
-                alert(data);
+                parseComment(data);
             })
-            .fail(function() {
-                alert( "error" );
-            })
-            .always(function() {
-                alert( "finished" );
-            });
-
-        // $.ajax({
-        //         url: urlParts[0] + 'comments/load/' + urlParts[1] + '/' + urlParts[2],
-        //         data: data,
-        //     })
-        //     .done(function(data) {
-        //         alert('SEND')
-        //     })
 
         return false;
         e.preventDefault();
     })
-    //     location = window.location.href;
-    //     url = $(this).attr('href').replace(/(?<=\/)show\/[\w\d\-]+(?=\?[^\/]+)/, 'load_comments');
-    //
-    //     // $.ajax({
-    //     //     url: url,
-    //     //     alert('DONE')
-    //     // });
-    //
-    //     // $.get(url, function(data) {
-    //     //     alert('Data loaded: ' + data);
-    //     // });
-    // });
+
+    var parseComment = function(data) {
+        var comments = JSON.parse(data);
+        console.log(comments);
+
+        for (var i = 0; i < comments.length; i++)
+        {
+            console.log(comments[i]);
+
+            comment = new Comment();
+            comment.populate(comments[i]);
+        }
+    }
 });
 
+
+var Comment = (function() {
+    // this.id, this.email, this.message, this.user_id, this.created_at, this.updated_at, this.post_id, this.parent_comment_id;
+    var id = 1, email, message, user_id, created_at, updated_at, post_id, parent_comment_id;
+    var test = 1;
+
+    function CommentConstructor() {
+        alert('ok');
+
+        // for (prop in data) {
+        //     if (this.hasOwnProperty(prop) && prop != undefined) {
+        //         this[prop] = data.prop;
+        //         console.log(prop + ': ' + this[prop])
+        //     }
+        // }
+    }
+
+    Comment.prototype.populate = function(data) {
+        console.log(data);
+
+        for (prop in data) {
+            console.log(prop)
+            if (this.hasOwnProperty(prop) && prop != undefined) {
+                this[prop] = data.prop;
+                console.log(prop + ': ' + this[prop])
+            }
+        }
+    }
+
+    Comment.prototype.display = function() {
+
+    }
+
+    return CommentConstructor();
+}());
+
+// comment = new Comment();
+// comment.display();

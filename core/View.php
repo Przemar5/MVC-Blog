@@ -32,6 +32,23 @@ class View
         include_once ROOT . DS . 'app' . DS . 'views' . DS . 'layouts' . DS . $file . '.php';
     }
 
+    public function setScript($name1, $name2 = '')
+    {
+        $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
+        $path = PathHelper::parentFolders($directory);
+        $path = implode('/', explode(DS, $path));
+
+        if (!empty($name2))
+        {
+            $path = preg_replace('/[0-9a-zA-Z _\-]*\/$/', $name1, $path);
+            $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name2 . '.js';
+        }
+        else
+        {
+            $this->_scripts[] = URL . $path . 'js' . '/' . $name1 . '.js';
+        }
+    }
+
     public function setScripts($names)
     {
         $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
@@ -44,7 +61,15 @@ class View
             {
                 foreach ($names as $name)
                 {
-                    $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name . '.js';
+                    if (is_array($name) && !empty($name))
+                    {
+                        $path = preg_replace('/[0-9a-zA-Z _\-]*\/$/', $name[0], $path);
+                        $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name[1] . '.js';
+                    }
+                    else
+                    {
+                        $this->_scripts[] = URL . $path . 'js' . '/' . $name . '.js';
+                    }
                     //$this->_scripts[] = 'js' . '/' . $name . '.js';
                 }
             }
