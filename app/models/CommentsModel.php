@@ -3,8 +3,8 @@
 
 class CommentsModel extends Model
 {
-    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_comment_id;
-    protected $formValues = ['username', 'email', 'message', 'post_id'];
+    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids;
+    protected $formValues = ['id', 'username', 'email', 'message', 'post_id'];
 
     private $validationRules = [
         'username' => [
@@ -36,12 +36,12 @@ class CommentsModel extends Model
     ];
 	
 	private $dependencies = [
-		/*'binding' => [
-			'authorName' => 'users',
+		'binding' => [
+			'children_ids' => 'parents_comments',
 		],
 		'select' => [
-			'users' => ['name', 'email'],
-		],*/
+			'parents_comments' => ['id'],
+		],
 		'insert' => [
 			'posts_comments' => [
 				'insert' => [
@@ -49,7 +49,25 @@ class CommentsModel extends Model
 					'comment_id' => 'id',
 				],
 			],
+			'parents_comments' => [
+			    'insert' => [
+			        'parent_id' => 'parent_id',
+			        'comment_id' => 'id'
+			    ]
+			]
 		],
+		'delete' => [
+		    'posts_comments' => [
+		        'delete' => [
+		            'comment_id' => 'id'
+		        ]
+		    ],
+		    'parents_comments' => [
+		        'delete' => [
+		            'comment_id' => 'id'
+		        ]
+		    ]
+		]
 	];
 
     public function __construct()
@@ -60,23 +78,24 @@ class CommentsModel extends Model
     public function check($update = false)
     {
         $this->validation = new Validator;
+
+		if ($update)
+		{
+			$this->ValidationRulesForUpdate();
+		}
+		else
+		{
+			$this->ValidationRulesForInsert();
+		}
 		
-//		if ($update)
-//		{
-//			$this->ValidationRulesForUpdate();
-//		}
-//		else 
-//		{
-//			$this->ValidationRulesForInsert();
-//		}
-		
-		if ($user = UsersModel::getLoggedInUser())
+		if (empty($this->id) && $user = UsersModel::getLoggedInUser())
 		{
 			$this->username = $user->username;
 			$this->email = $user->email;
 			$this->user_id = $user->id;
 		}
-		
+		$this->parent_id = $this->parent_id ?? 0;
+
         $this->validation->check([
             'username' => $this->username,
             'email' => $this->email,
@@ -102,17 +121,11 @@ class CommentsModel extends Model
 		{
 			unset($this->validationRules['user_id']['match']);
 		}
-		$this->removeUniqueException('title');
-		$this->removeUniqueException('label');
-		$this->removeUniqueException('slug');
 	}
 	
 	private function validationRulesForUpdate()
 	{
 		$this->validationRules['user_id']['match'] = ['args' => [$this->user_id], 'msg' =>''];
-		$this->addUniqueException('title');
-		$this->addUniqueException('label');
-		$this->addUniqueException('slug');
 	}
 	
 	private function addUniqueException($column)
@@ -135,7 +148,15 @@ class CommentsModel extends Model
 	{
 		if ($this->id)
 		{
-			die('IS ID');
+			$data = [
+                'username' => $this->username,
+                'email' => $this->email,
+                'message' => $this->message,
+                'user_id' => $this->user_id,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+
+            return $this->update($this->id, $data);
 		}
 		else 
 		{
@@ -149,18 +170,18 @@ class CommentsModel extends Model
 				'created_at' => date('Y-m-d H:i:s'),
 			];
 
-			if (!$this->insert($data, true))
-			{
-				return false;
-			}
-
-			return true;
+			return $this->insert($data, true);
 		}
 	}
 
 	public function getAdditionalInfo()
     {
         if (empty($this->id))
+        {
+            return false;
+        }
+
+        if (empty($this->dependencies['binding']))
         {
             return false;
         }
@@ -208,6 +229,29 @@ class CommentsModel extends Model
 
 		return true;
 	}
+
+	public function findForParent($postId, $parentId = null, $values = [])
+	{
+
+
+        if (empty($postId) || !$post = ModelMediator::make('postsModel', 'findById', [$postId]))
+        {
+            return false;
+        }
+
+        $valuesString = (is_array($values)) ? implode(', ', $values) : $values;
+        $valuesString = (!empty($valuesString)) ? $valuesString : '*';
+        $conditionString = 'parent_id ';
+        $conditionString .= (!empty($parentId)) ? '= ' . $parentId : 'IS NULL';
+
+        $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE id IN ' .
+                '(SELECT comment_id FROM parents_comments WHERE comment_id IN ' .
+                '(SELECT comment_id FROM posts_comments WHERE ' . $conditionString . '))';
+
+        $result = $this->_db->query($sql)->results();
+
+        dd($result);
+	}
 /*
 	public function commentsForPostDesc($limit, $post)
 	{
@@ -229,6 +273,61 @@ class CommentsModel extends Model
 		$params['from'] = $offset;
 
 		return $this->complexFind($path, $params);
+	}
+
+	public function rootIdsForPostDesc($postId)
+	{
+        $sql = 'SELECT comments.id
+                FROM comments, parents_comments
+                WHERE comments.id
+                IN (SELECT comment_id
+                    FROM posts_comments
+                    WHERE post_id = ?)
+                AND comments.id
+                NOT IN (SELECT comment_id
+                    FROM parents_comments
+                    WHERE comment_id
+                    IN (SELECT comment_id
+                        FROM posts_comments
+                        WHERE post_id = ?))
+                ORDER BY comments.id DESC';
+
+        return ArrayHelper::flattenSingles($this->query($sql, [$postId, $postId])->results());
+	}
+
+	public function findByIds($ids, $values = ['*'])
+	{
+	    if (empty($ids))
+	    {
+	        return false;
+	    }
+
+        $valuesString = (is_array($values)) ? implode(', ', $values) : $values;
+        $closure = function($v) {   return 'id = ?';    };
+        $idsString = (is_array($values)) ? implode(' OR ', array_map($closure, $ids)) : $ids;
+	    $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE ' . $idsString;
+
+        return $this->_db->query($sql, $ids)->results();
+	}
+
+	public function findLastFromByIds($limit, $offset, $params = [], $postId, $parentId = '')
+	{
+        $sql = 'SELECT comments.*
+                FROM comments, parents_comments
+                WHERE comments.id
+                IN (SELECT comment_id
+                    FROM posts_comments
+                    WHERE post_id = ?)
+                AND comments.id
+                NOT IN (SELECT comment_id
+                    FROM parents_comments
+                    WHERE comment_id
+                    IN (SELECT comment_id
+                        FROM posts_comments
+                        WHERE post_id = ?))
+                ORDER BY comments.id DESC';
+
+        return $this->_db->query($sql, [$postId, $postId], get_class($this))->results();
 	}
 
 	public function idDescFor($params)

@@ -201,33 +201,32 @@ class Model
 		$mainValues = (isset($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
 		$mainValues = (!empty($mainValues)) ? $mainValues : '*';
 		$bracketsCounter = 0;
-		
+
 		if (!empty($paths) && count($paths))
 		{
 			foreach ($paths as $pathName => $path)
 			{
 				$path = array_reverse($path);
-				
+
 				if (!empty($paths) && count($paths))
 				{
 					foreach ($path as $table => $values)
 					{
 						$valuesList = (!empty($mainValues)) ? $mainValues : array_pop($values);
 						$whereValue = (is_array($values)) ? array_pop($values) : $values;
-						unset($mainValues);
-						
+
 						$sql .= 'SELECT ' . $valuesList . ' FROM ' . $table . ' WHERE ';
-						
+
 						if ($bracketsCounter < count($path) - 1)
 						{
 							$sql .= $whereValue . ' IN (';
 						}
-						else 
+						else
 						{
 							$params['bind'] = reset($params['data'][$pathName]);
 							$sql .= Helper::repeatString($whereValue . ' = ?', count($params['bind']), ' OR ');
 						}
-							
+
 						$bracketsCounter++;
 					}
 				}
@@ -251,7 +250,8 @@ class Model
 		
 		if (!$dependencies)
 		{
-			return $this->_db->query($sql, $params['bind'], $class)->results();
+			$result = $this->_db->query($sql, $params['bind'], $class)->results();
+
 		}
 		else
 		{

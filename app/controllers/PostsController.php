@@ -111,10 +111,18 @@ class PostsController extends Controller
 		}
 
 		$this->view->post->prepareForDisplay();
-		$this->_commentIds = $this->commentsModel->idDescForPost($this->view->post->id);
-		$this->view->comments = $this->commentsModel->lastForPost($this->_commentsNumber, $this->view->post->id);
-		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;
+		$this->view->submitButtonValue = 'Create';
+
+		// Loading comments
+        $this->_commentIds = $this->commentsModel->findForParent($this->view->post->id, null, 'id');
+        // dd($this->_commentIds);
+        // dd(array_splice($this->_commentIds, 0, self::COMMENTS_PER_POST));
+        $lastId = $this->_commentIds[self::COMMENTS_PER_POST] + 1;
+        $this->view->comments = $this->commentsModel->findByIds(array_splice($this->_commentIds, 0, self::COMMENTS_PER_POST));
 		$this->view->loadMore = $this->_prepareLoadMore();
+
+		dd($this->view->comments);
+
         $this->view->render('posts/show');
     }
 
