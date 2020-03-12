@@ -95,7 +95,7 @@ class PostsController extends Controller
             }
         }
 
-		if (Input::isPost())
+		if (Input::isPost() && !empty($_POST))
 		{
 			$this->commentsModel->populate($_POST);
 
@@ -114,15 +114,14 @@ class PostsController extends Controller
 		$this->view->submitButtonValue = 'Create';
 
 		// Loading comments
-        $this->_commentIds = $this->commentsModel->findForParent($this->view->post->id, null, 'id');
-        // dd($this->_commentIds);
-        // dd(array_splice($this->_commentIds, 0, self::COMMENTS_PER_POST));
-        $lastId = $this->_commentIds[self::COMMENTS_PER_POST] + 1;
-        $this->view->comments = $this->commentsModel->findByIds(array_splice($this->_commentIds, 0, self::COMMENTS_PER_POST));
-		$this->view->loadMore = $this->_prepareLoadMore();
+		$params = [
+		    'values' => '*',
+		    'order' => 'id DESC',
+		    'limit' => self::COMMENTS_PER_POST,
+		];
 
-		dd($this->view->comments);
-
+        $this->view->comments = $this->commentsModel->findForParent($this->view->post->id, null, $params, true);
+        $this->view->loadMore = $this->_prepareLoadMore();
         $this->view->render('posts/show');
     }
 

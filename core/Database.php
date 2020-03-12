@@ -179,6 +179,7 @@ class Database
         $bind = [];
         $order = '';
         $limit = '';
+        $offset = '';
 
         // Values
         if (isset($params['values']))
@@ -247,7 +248,16 @@ class Database
             }
         }
 
-        $sql = 'SELECT ' . $valueString . ' FROM ' . $table . $conditionString . $order . $limit;
+        // Offset
+        if (isset($params['offset']))
+        {
+            if (array_key_exists('offset', $params))
+            {
+                $limit = ' OFFSET ' . $params['offset'];
+            }
+        }
+
+        $sql = 'SELECT ' . $valueString . ' FROM ' . $table . $conditionString . $order . $limit . $offset;
 
         if ($this->query($sql, $bind, $class))
         {

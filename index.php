@@ -29,16 +29,18 @@ require_once 'app/controllers/HomeController.php';
 
 function d($data, $line = '', $function = '')
 {
+    echo '<pre>';
+
     if (gettype($data) === 'array' || gettype($data) === 'object')
     {
-        echo '<pre>';
         var_dump($data);
-        echo '</pre>';
     }
     else 
     {
         echo $data;
     }
+
+    echo '</pre>';
 
     echo '<br>', $line, '<br>', $function;
 }

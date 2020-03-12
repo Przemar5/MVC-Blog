@@ -1,5 +1,6 @@
 <div id="comments">
     <script>alert('GOOD');</script>
+
     <?php if (!empty($this->comments) && count($this->comments)): ?>
         <?php foreach ($this->comments as $comment): ?>
             <div class="card my-4">

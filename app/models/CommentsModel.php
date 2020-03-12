@@ -160,7 +160,7 @@ class CommentsModel extends Model
 		}
 		else 
 		{
-			$this->parent_id = null;
+			$this->parent_id = 0;
 
 			$data = [
 				'username' => $this->username,
@@ -230,27 +230,34 @@ class CommentsModel extends Model
 		return true;
 	}
 
-	public function findForParent($postId, $parentId = null, $values = [])
+	public function findForParent($postId, $parentId = null, $params = [], $class = true)
 	{
-
-
-        if (empty($postId) || !$post = ModelMediator::make('postsModel', 'findById', [$postId]))
+        if (empty($postId) || !$post = ModelMediator::make('posts', 'findById', [$postId, ['values' => 'id'], false]))
         {
             return false;
         }
 
-        $valuesString = (is_array($values)) ? implode(', ', $values) : $values;
+        $valuesString = (!empty($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
         $valuesString = (!empty($valuesString)) ? $valuesString : '*';
-        $conditionString = 'parent_id ';
-        $conditionString .= (!empty($parentId)) ? '= ' . $parentId : 'IS NULL';
+        $order = (!empty($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
+        $limit = (!empty($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
+        $offset = (!empty($params['offset'])) ? ' OFFSET ' . $params['offset'] : '';
+        $postIdString = 'post_id = ?';
+        $parentIdString = (!empty($parentId)) ? 'parent_id = ?' . $parentId : '(parent_id IS NULL OR parent_id = 0)';
+        $params = [$postId];
+        $class = ($class) ? get_class($this) : false;
+
+        if (!empty($parentId))
+        {
+            $params = array_unshift($params, $parentId);
+        }
 
         $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE id IN ' .
-                '(SELECT comment_id FROM parents_comments WHERE comment_id IN ' .
-                '(SELECT comment_id FROM posts_comments WHERE ' . $conditionString . '))';
+                '(SELECT comment_id FROM parents_comments WHERE ' . $parentIdString . ' AND comment_id IN ' .
+                '(SELECT comment_id FROM posts_comments WHERE ' . $postIdString . ')) ' .
+                $order . $limit . $offset;
 
-        $result = $this->_db->query($sql)->results();
-
-        dd($result);
+        return $this->_db->query($sql, $params, $class)->results();
 	}
 /*
 	public function commentsForPostDesc($limit, $post)
@@ -295,19 +302,33 @@ class CommentsModel extends Model
         return ArrayHelper::flattenSingles($this->query($sql, [$postId, $postId])->results());
 	}
 
-	public function findByIds($ids, $values = ['*'])
+	public function findByIds($ids, $params = [], $class = true)
 	{
 	    if (empty($ids))
 	    {
 	        return false;
 	    }
 
-        $valuesString = (is_array($values)) ? implode(', ', $values) : $values;
-        $closure = function($v) {   return 'id = ?';    };
-        $idsString = (is_array($values)) ? implode(' OR ', array_map($closure, $ids)) : $ids;
-	    $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE ' . $idsString;
+        if (is_array($ids))
+        {
+            $lambda = function($v) {   return 'id = ?';    };
+            $idsString = '(' . implode(' OR ', array_map($lambda, $ids)) . ')';
+            $params['bind'] = $params['bind'] ?? [];
+            $params['bind'] = array_merge($params['bind'], array_reverse($ids));
+            $params['conditions'] = (!empty($params['conditions'])) ? '(' . $params['conditions'] . ') AND ' : '';
+            $params['conditions'] .= $idsString;
+        }
+        else if (is_string($ids) || is_int($ids))
+        {
+            $params['bind'][] = $ids;
+            $params['conditions'] = (!empty($params['conditions'])) ? '(' . $params['conditions'] . ') AND id = ?' : '';
+        }
+        else
+        {
+            return false;
+        }
 
-        return $this->_db->query($sql, $ids)->results();
+        return $this->find($params, $class);
 	}
 
 	public function findLastFromByIds($limit, $offset, $params = [], $postId, $parentId = '')

@@ -35,8 +35,12 @@ class ModelMediator
             require_once $path;
 
             $modelName = $name . 'Model';
-            self::$models[$modelName] = new $modelName;
-			
+
+            if (!isset(self::$models[$modelName]))
+            {
+                self::$models[$modelName] = new $modelName;
+            }
+
 			return true;
         }
 		

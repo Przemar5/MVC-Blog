@@ -2,15 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../app/models/ParentsCommentsModel.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/controllers/CommentsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/CommentsController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/controllers/PostsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/PostsController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/models/CommentsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/models/CommentsModel.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/comments/partials/form.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/partials/form.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../core/Model.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/Model.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/Database.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/Database.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/ModelMediator.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/ModelMediator.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../index.php" beforeDir="false" afterPath="$PROJECT_DIR$/../index.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +85,11 @@
       <workItem from="1583656776137" duration="14331000" />
       <workItem from="1583746075676" duration="10334000" />
       <workItem from="1583754930029" duration="9187000" />
-      <workItem from="1583823583042" duration="43892000" />
+      <workItem from="1583823583042" duration="45089000" />
+      <workItem from="1583920902748" duration="6107000" />
+      <workItem from="1584004867219" duration="2817000" />
+      <workItem from="1584008738309" duration="10857000" />
+      <workItem from="1584024451978" duration="5447000" />
     </task>
     <servers />
   </component>
@@ -94,10 +97,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1583823589142">
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1584024460539">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1583823589142" />
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1584024460539" />
     <state x="535" y="190" key="run.anything.popup" timestamp="1583861762374">
       <screen x="0" y="0" width="1600" height="860" />
     </state>

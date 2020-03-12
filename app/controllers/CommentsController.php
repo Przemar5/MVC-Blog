@@ -32,25 +32,33 @@ class CommentsController extends Controller
 	    $this->view->render('comments/edit');
 	}
 
-    public function load_action($postSlug, $amount, $parentId = 0)
+    public function load_action($postSlug, $limit, $parentId = 0, $offset = 0)
     {
-        if ($postId = $this->postsModel->findBySlug($postSlug, 'id', false)->id)
+        if (!$postId = $this->postsModel->findBySlug($postSlug, 'id', false)->id)
         {
-            $amount = (int) $amount;
-            $this->_ids = $this->commentsModel->rootIdsForPostDesc($postId);
-            $this->_ids = array_reverse(ArrayHelper::flattenSingles($this->commentsModel->findForParent($postId, null, 'id')));
-
-            if ($amount >= count($this->_ids) + self::COMMENTS_PER_LOAD)
-            {
-                exit;
-            }
-
-            $lastId = $this->_ids[($amount - self::COMMENTS_PER_LOAD) - 1] ?? null;
-            $this->view->comments = array_reverse($this->commentsModel->findByIds(array_splice($this->_ids, 0, self::COMMENTS_PER_LOAD)));
-            $this->_lastCommentId = ArrayHelper::last($this->view->comments);
-
-            echo preg_replace('/^[^\[]*(?=\[)/m', '', json_encode($this->view->comments));
+            return false;
         }
+
+        if ($parentId != 0 && !$this->commentsModel->find($parentId))
+        {
+            return false;
+        }
+
+        $params = [
+            'limit' => self::COMMENTS_PER_LOAD,
+            'offset' => ((int) $limit) - self::COMMENTS_PER_LOAD
+        ];
+
+        $this->view->comments = array_reverse($this->commentsModel->findByIds(array_splice($this->_ids, 0, self::COMMENTS_PER_LOAD)));
+        $this->view->comments = $this->commentsModel->findForParent($postId, $parentId, $params, false);
+
+        d($this->commentsModel->debugDumpParams());
+
+        dd($this->view->comments);
+
+        $this->_lastCommentId = ArrayHelper::last($this->view->comments);
+
+        echo preg_replace('/^[^\[]*(?=\[)/m', '', json_encode($this->view->comments));
     }
 
     public function delete_action($id)
