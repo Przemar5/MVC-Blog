@@ -2,13 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../app/views/comments/partials/comment.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/controllers/CommentsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/CommentsController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/controllers/PostsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/PostsController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/models/CommentsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/models/CommentsModel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/comment.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/comment.class.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../core/Database.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/Database.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../core/ModelMediator.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/ModelMediator.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/views/posts/show.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/show.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/HTML.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/HTML.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/Router.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/Router.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/URL.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/URL.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../core/View.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/View.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../index.php" beforeDir="false" afterPath="$PROJECT_DIR$/../index.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,6 +96,7 @@
       <workItem from="1584004867219" duration="2817000" />
       <workItem from="1584008738309" duration="10857000" />
       <workItem from="1584024451978" duration="5447000" />
+      <workItem from="1584092468574" duration="30708000" />
     </task>
     <servers />
   </component>
@@ -97,17 +104,17 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1584024460539">
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1584092468759">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1584024460539" />
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1584092468759" />
     <state x="535" y="190" key="run.anything.popup" timestamp="1583861762374">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
     <state x="535" y="190" key="run.anything.popup/0.0.1600.860@0.0.1600.860" timestamp="1583861762374" />
-    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup" timestamp="1583868037154">
+    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup" timestamp="1584125705721">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
-    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup/0.0.1600.860@0.0.1600.860" timestamp="1583868037154" />
+    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup/0.0.1600.860@0.0.1600.860" timestamp="1584125705721" />
   </component>
 </project>

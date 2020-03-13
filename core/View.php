@@ -32,8 +32,9 @@ class View
         include_once ROOT . DS . 'app' . DS . 'views' . DS . 'layouts' . DS . $file . '.php';
     }
 
-    public function setScript($name1, $name2 = '')
+    public function setScript($name1, $name2 = '', $attrs = [])
     {
+        $attrs = HTML::stringifyAttrs($attrs);
         $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
         $path = PathHelper::parentFolders($directory);
         $path = implode('/', explode(DS, $path));
@@ -41,16 +42,19 @@ class View
         if (!empty($name2))
         {
             $path = preg_replace('/[0-9a-zA-Z _\-]*\/$/', $name1, $path);
-            $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name2 . '.js';
+            $url = URL . $path . '/' . 'js' . '/' . $name2 . '.js';
         }
         else
         {
-            $this->_scripts[] = URL . $path . 'js' . '/' . $name1 . '.js';
+            $url = URL . $path . 'js' . '/' . $name1 . '.js';
         }
+
+        $this->_scripts[] = '<script type="text/javascript" ' . $attrs . ' src="' . $url . '"></script>';
     }
 
     public function setScripts($names)
     {
+        $attrs = HTML::stringifyAttrs($inputData);
         $directory = PathHelper::getDirectory(debug_backtrace()[0]['file']);
         $path = PathHelper::parentFolders($directory);
         $path = implode('/', explode(DS, $path));
@@ -64,36 +68,32 @@ class View
                     if (is_array($name) && !empty($name))
                     {
                         $path = preg_replace('/[0-9a-zA-Z _\-]*\/$/', $name[0], $path);
-                        $this->_scripts[] = URL . $path . '/' . 'js' . '/' . $name[1] . '.js';
+                        $url = URL . $path . '/' . 'js' . '/' . $name[1] . '.js';
                     }
                     else
                     {
-                        $this->_scripts[] = URL . $path . 'js' . '/' . $name . '.js';
+                        $url = URL . $path . 'js' . '/' . $name . '.js';
                     }
-                    //$this->_scripts[] = 'js' . '/' . $name . '.js';
+
+                    $this->_scripts[] = '<script type="text/javascript" ' . $attrs . ' src="' . $url . '"></script>';
                 }
             }
             else
             {
-                $this->_scripts[] = URL . $path . 'js' . '/' . $names . '.js';
-                //$this->_scripts[] = 'js' . '/' . $names . '.js';
+                $url = URL . $path . 'js' . '/' . $names . '.js';
+                $this->_scripts[] = '<script type="text/javascript" ' . $attrs . ' src="' . $url . '"></script>';
             }
         }
     }
 
     public function scripts()
     {
-        $scripts = '';
-
-        if (!empty($this->_scripts))
+        if (empty($this->_scripts))
         {
-            foreach ($this->_scripts as $link)
-            {
-                $scripts .= '<script type="text/javascript" src="' . $link . '"></script>';
-            }
+            return false;
         }
 
-        return $scripts;
+        return implode("", $this->_scripts);
     }
 	
 	public function content($type)

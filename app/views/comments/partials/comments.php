@@ -14,6 +14,7 @@
                             </em>
                         </small>
 
+
                         <div class="pull-right">
                             <a href="<?= URL . 'comments/edit/' . $comment->id; ?>" class="btn btn-sm btn-primary">Edit</a>
                             <a href="<?= URL . 'comments/delete/' . $comment->id; ?>" class="btn btn-sm btn-danger">Delete</a>
@@ -26,9 +27,20 @@
                         <?= $comment->message; ?>
                     </p>
 
-                    <a href="<?= URL . 'posts/show/' . $comment->id; ?>" class="text-primary pull-right">
-                        Read More
-                    </a>
+                    <div class="subcomments">
+                        <?php if (!empty($comment->subcomments) && count($comment->subcomments)): ?>
+                            <button id="loadMore" name="load" value="<?= $comment->id; ?>" class="btn btn-block btn-primary btn-load">
+                                Load More
+                            </button>
+
+                            <?php foreach ($comment->subcomments as $comment): ?>
+
+                                <?php $this->partial('comments', 'comments'); ?>
+                                <?php include('comment.php'); ?>
+
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
@@ -41,5 +53,5 @@
 </div>
 
 <?php if (!empty($this->comments)): ?>
-	<?= $this->loadMore; ?>
+	<?= $this->loadMore ?? ''; ?>
 <?php endif; ?>

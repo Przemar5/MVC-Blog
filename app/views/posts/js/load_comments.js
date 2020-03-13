@@ -9,9 +9,8 @@ $(document).ready(function() {
 
         if (!disabled) {
             var url = this.getAttribute('href');
-            var urlParts = splitUrl(url);
 
-            var xhr = $.get(urlParts[0] + 'comments/load/' + urlParts[1] + '/' + urlParts[2], function () {
+            var xhr = $.get(url, function () {
                     alert("success");
                 })
                 .done(function (data) {
@@ -90,6 +89,8 @@ $(document).ready(function() {
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
         this.deleted = data.deleted;
+        this.parent_id = data.parent_id;
+        var ROOT = 'http://localhost/files/projects/NewBlog/comments/';
 
         this.prepareLink = function()
         {
@@ -103,7 +104,7 @@ $(document).ready(function() {
         {
             this.prepareLink();
 
-            comment = ` <div class="card my-4 comment">
+            comment = `<div class="card my-4 comment">
                 <div class="card-body">
                     <h3>
                         ${this.username}
@@ -113,6 +114,11 @@ $(document).ready(function() {
                                 created at ${this.created_at}
                             </em>
                         </small>
+                    
+                        <div class="pull-right">
+                            <a href="${ROOT}edit/${this.id}" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="${ROOT}delete/${this.id}" class="btn btn-sm btn-danger">Delete</a>
+                        </div>
                     </h3>
 
                     <h2>${this.id}</h2>
@@ -121,8 +127,9 @@ $(document).ready(function() {
                         ${this.message}
                     </p>
 
-                    <a href="<?= URL . 'posts/show/' . $comment->id; ?>" class="text-primary pull-right">
-                        Read More
+                    <a href="${ROOT}load/${this.id}?" class="btn btn-block btn-default
+                    t">
+                        Load More 
                     </a>
                 </div>
             </div>`;

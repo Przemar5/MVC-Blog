@@ -22,4 +22,20 @@ class URL
 		
 		return $url;
 	}
+
+    public static function insertGet($param, $value)
+    {
+        if (isset($_GET[$param]))
+        {
+            return self::updateGet($param, $value);
+        }
+        return (preg_match('/\?[^\/]*$/', self::actualUrl()))
+                ? self::actualUrl() . '&' . $param . '=' . $value
+                : self::actualUrl() . '?' . $param . '=' . $value;
+    }
+
+	public static function updateGet($param, $value)
+	{
+	    return preg_replace('/(?!(\?|\&))' . $param . '=[^\&]*[^\/]*/', $param . '=' . $value, self::actualUrl());
+	}
 }

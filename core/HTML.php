@@ -213,7 +213,7 @@ class HTML
         return $html;
     }
 	
-	private static function stringifyAttrs($data)
+	public static function stringifyAttrs($data)
 	{
 		$result = '';
 		

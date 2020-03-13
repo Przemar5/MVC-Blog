@@ -3,9 +3,8 @@
 
 class CommentsController extends Controller
 {
-    private $_ids, $_lastCommentId;
     private const COMMENTS_PER_LOAD = 5;
-    private static $_commentsNumber = 5, $_disabled = false;
+    private $_postId, $_parentId;
 
 	public function __construct()
 	{
@@ -32,33 +31,27 @@ class CommentsController extends Controller
 	    $this->view->render('comments/edit');
 	}
 
-    public function load_action($postSlug, $limit, $parentId = 0, $offset = 0)
+    public function load_action()
     {
-        if (!$postId = $this->postsModel->findBySlug($postSlug, 'id', false)->id)
-        {
-            return false;
-        }
+        ini_set('display_errors', 'Off');
 
-        if ($parentId != 0 && !$this->commentsModel->find($parentId))
+        $postId = $this->postsModel->findById(Input::get('post'), ['values' => 'id'], false)->id;
+        $parentId = Input::get('parent') ?? 0;
+
+        if ($parentId != 0)
         {
-            return false;
+            $parentId = $this->commentsModel->findById($parentId, ['values' => 'id'], false);
         }
+        $amount = (int) Input::get('comments');
 
         $params = [
             'limit' => self::COMMENTS_PER_LOAD,
-            'offset' => ((int) $limit) - self::COMMENTS_PER_LOAD
+		    'order' => 'id DESC',
+            'offset' => $amount - self::COMMENTS_PER_LOAD
         ];
-
-        $this->view->comments = array_reverse($this->commentsModel->findByIds(array_splice($this->_ids, 0, self::COMMENTS_PER_LOAD)));
         $this->view->comments = $this->commentsModel->findForParent($postId, $parentId, $params, false);
 
-        d($this->commentsModel->debugDumpParams());
-
-        dd($this->view->comments);
-
-        $this->_lastCommentId = ArrayHelper::last($this->view->comments);
-
-        echo preg_replace('/^[^\[]*(?=\[)/m', '', json_encode($this->view->comments));
+        echo preg_replace('/^[^\[]*(?!\[)/m', '', json_encode($this->view->comments));
     }
 
     public function delete_action($id)
@@ -91,4 +84,14 @@ class CommentsController extends Controller
             Router::redirect('posts');
         }
     }
+
+	private function _extractGet($get, $multiple = false)
+	{
+		if (empty($_GET[$get]))
+		{
+			return false;
+		}
+
+		return Input::get($get);
+	}
 }

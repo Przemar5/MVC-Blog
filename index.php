@@ -43,6 +43,7 @@ function d($data, $line = '', $function = '')
     echo '</pre>';
 
     echo '<br>', $line, '<br>', $function;
+    echo "\r\n";
 }
 
 function dd($data)

@@ -6,7 +6,7 @@ class PostsController extends Controller
     private const POSTS_PER_PAGE = 5;
     private const COMMENTS_PER_POST = 5;
     private $_currentPage = 1, $_tagNames, $_category, $_params, $_ids, $_commentIds,
-            $_lastCommentId = 0, $_commentsNumber = self::COMMENTS_PER_POST;
+            $_lastCommentId = 0, $_commentsNumber = self::COMMENTS_PER_POST, $_noscript = false;
 	private $_urlParams = [
 		'tag' => ['tags', 'name']
 	];
@@ -75,11 +75,6 @@ class PostsController extends Controller
 		}
 	}
 
-	private function _findComments()
-	{
-
-	}
-
 	public function show_action($slug)
     {
         if (!$this->view->post = $this->postsModel->findBySlug($slug))
@@ -87,8 +82,17 @@ class PostsController extends Controller
             Router::redirect(URL . 'posts');
         }
 
+        /*  I know it looks ugly, but i think using redirect before rendering the page
+            is better than redirecting user after loading page content. */
+        if (!isset($_GET['noscript']))
+        {
+            Router::checkNoscript();
+        }
+
         if (Input::isGet())
         {
+            $this->_extractGet('noscript', '_noscript');
+
             if (!$this->_extractGet('comments', '_commentsNumber', true))
             {
                 $this->_commentsNumber = self::COMMENTS_PER_POST;
@@ -120,14 +124,17 @@ class PostsController extends Controller
 		    'limit' => self::COMMENTS_PER_POST,
 		];
 
-        $this->view->comments = $this->commentsModel->findForParent($this->view->post->id, null, $params, true);
-        $this->view->loadMore = $this->_prepareLoadMore();
-        $this->view->render('posts/show');
-    }
+        if (!$this->_noscript)
+        {
+            $this->view->comments = $this->commentsModel->findForParent($this->view->post->id, null, $params, true);
+            $this->view->loadMore = $this->_prepareLoadMore();
+        }
+        else
+        {
+            $this->view->comments = $this->commentsModel->getCommentsTree($this->view->post->id, ['order' => 'id DESC']);
+        }
 
-    public function load_more_comments($slug, $number)
-    {
-        echo 'WORKS';
+        $this->view->render('posts/show');
     }
 
     public function create_action()
@@ -239,26 +246,9 @@ class PostsController extends Controller
 		}
     }
 
-    public function load_comments_action()
-    {
-        if (Input::isGet())
-        {
-            if ($this->_extractGet('comments', '_commentsNumber', true) && $this->_extractGet('post', 'postsModel->slug', true))
-            {
-                echo $this->_commentsNumber;
-            }
-        }
-
-        //echo $_GET['comments'];
-
-		$this->view->comments = $this->commentsModel->lastFrom($this->_commentsNumber, $this->_lastCommentId, ['conditions' => '']);
-		$this->_lastCommentId = ArrayHelper::last($this->view->comments)->id;
-		$this->view->pagination = $this->_prepareLoadMore();
-    }
-
     private function _prepareLoadMore()
     {
-        $loadCommentsUrl = URL::actualUrlWithoutGet() . '?comments=' . ($this->_commentsNumber + self::COMMENTS_PER_POST);
+        $loadCommentsUrl = URL . 'comments/load?post=' . $this->view->post->id . '&parent=0&comments=' . ($this->_commentsNumber + self::COMMENTS_PER_POST);
 
 		return HTML::link(['text' => 'Load More Comments', 'id' => 'loadComments', 'class' => 'btn btn-block btn-primary', 'href' => $loadCommentsUrl]);
     }

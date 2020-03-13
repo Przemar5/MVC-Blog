@@ -3,7 +3,7 @@
 
 class CommentsModel extends Model
 {
-    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids;
+    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids, $subcomments;
     protected $formValues = ['id', 'username', 'email', 'message', 'post_id'];
 
     private $validationRules = [
@@ -38,9 +38,12 @@ class CommentsModel extends Model
 	private $dependencies = [
 		'binding' => [
 			'children_ids' => 'parents_comments',
+			'parent_id' => 'parents_comments',
+			'post_id' => 'posts_comments'
 		],
 		'select' => [
-			'parents_comments' => ['id'],
+			'parents_comments' => ['parent_id', 'comment_id'],
+			'posts_comments' => ['post_id']
 		],
 		'insert' => [
 			'posts_comments' => [
@@ -190,12 +193,11 @@ class CommentsModel extends Model
         {
             if (empty($this->{$property}))
             {
-            /*
                 $this->{$property} = ModelMediator::make($this->_table . $object,
                                                          $property . 'ForPost',
                                                          [$this->id,
                                                           ['values' => $this->dependencies['select'][$object]]]);
-                                                          */
+
             }
         }
     }
@@ -230,6 +232,94 @@ class CommentsModel extends Model
 		return true;
 	}
 
+	public function getCommentsTree($postId, $params = [], $class = true)
+	{
+	    //dd(func_get_args());
+
+	    $rootComments = $this->findForParent($postId, 0, $params, false, $additionalActions = []);
+
+        foreach ($rootComments as $comment)
+        {
+            $comment->subcomments = $this->getCommentBranch($comment->id, $params, false, $additionalActions);
+
+	        if (!empty($additionalActions))
+	        {
+	            foreach ($additionalActions as $action => $args)
+	            {
+	                call_user_func_array([$this, $action], [$args]);
+	            }
+	        }
+        }
+
+	    return $rootComments;
+	}
+
+	public function getCommentBranch($commentId, $params = [], $class = true, $additionalActions = [])
+	{
+	    $subcomments = $this->findSubcomments($commentId, $params, $class);
+
+	    foreach ($subcomments as $subcomment)
+	    {
+	        $subcomment->subcomments = $this->getCommentBranch($subcomment->id, $params, $class);
+
+	        if (!empty($additionalActions))
+	        {
+	            foreach ($additionalActions as $action => $args)
+	            {
+	                call_user_func_array([$this, $action], [$args]);
+	            }
+	        }
+	    }
+
+	    return $subcomments;
+	}
+
+	public function findSubcomments($parentId, $params = [], $class = true)
+	{
+        if (empty($parentId) || !$parent = $this->findById($parentId, ['values' => 'id'], false))
+        {
+            return false;
+        }
+
+        $valuesString = (!empty($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
+        $valuesString = (!empty($valuesString)) ? $valuesString : '*';
+        $order = (!empty($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
+        $limit = (!empty($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
+        $offset = (!empty($params['offset'])) ? ' OFFSET ' . $params['offset'] : '';
+        $parentIdString = 'parent_id = ?';
+        $params = [$parentId];
+        $class = ($class) ? get_class($this) : false;
+
+        $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE id IN ' .
+                '(SELECT comment_id FROM parents_comments WHERE ' . $parentIdString . ') ' .
+                $order . $limit . $offset;
+
+        return $this->_db->query($sql, $params, $class)->results();
+	}
+
+    public function findForPost($postId, $params = [], $class = true)
+    {
+        if (empty($postId) || !$post = ModelMediator::make('posts', 'findById', [$postId, ['values' => 'id'], false]))
+        {
+            return false;
+        }
+
+        $valuesString = (!empty($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
+        $valuesString = (!empty($valuesString)) ? $valuesString : '*';
+        $order = (!empty($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
+        $limit = (!empty($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
+        $offset = (!empty($params['offset'])) ? ' OFFSET ' . $params['offset'] : '';
+        $postIdString = 'post_id = ?';
+        $params = [$postId];
+        $class = ($class) ? get_class($this) : false;
+
+        $sql = 'SELECT ' . $valuesString . ' FROM ' . $this->_table . ' WHERE id IN ' .
+                '(SELECT comment_id FROM posts_comments WHERE ' . $postIdString . ') ' .
+                $order . $limit . $offset;
+
+        return $this->_db->query($sql, $params, $class)->results();
+    }
+
 	public function findForParent($postId, $parentId = null, $params = [], $class = true)
 	{
         if (empty($postId) || !$post = ModelMediator::make('posts', 'findById', [$postId, ['values' => 'id'], false]))
@@ -259,15 +349,7 @@ class CommentsModel extends Model
 
         return $this->_db->query($sql, $params, $class)->results();
 	}
-/*
-	public function commentsForPostDesc($limit, $post)
-	{
-	    $params['order'] = 'id DESC';
-    	$params['limit'] = $limit;
 
-        dd(func_get_args());
-	}
-*/
 	public function lastFromFor($limit, $offset, $params = [])
 	{
 		foreach ($params['data'] as $table => $column)
@@ -280,26 +362,6 @@ class CommentsModel extends Model
 		$params['from'] = $offset;
 
 		return $this->complexFind($path, $params);
-	}
-
-	public function rootIdsForPostDesc($postId)
-	{
-        $sql = 'SELECT comments.id
-                FROM comments, parents_comments
-                WHERE comments.id
-                IN (SELECT comment_id
-                    FROM posts_comments
-                    WHERE post_id = ?)
-                AND comments.id
-                NOT IN (SELECT comment_id
-                    FROM parents_comments
-                    WHERE comment_id
-                    IN (SELECT comment_id
-                        FROM posts_comments
-                        WHERE post_id = ?))
-                ORDER BY comments.id DESC';
-
-        return ArrayHelper::flattenSingles($this->query($sql, [$postId, $postId])->results());
 	}
 
 	public function findByIds($ids, $params = [], $class = true)
@@ -329,26 +391,6 @@ class CommentsModel extends Model
         }
 
         return $this->find($params, $class);
-	}
-
-	public function findLastFromByIds($limit, $offset, $params = [], $postId, $parentId = '')
-	{
-        $sql = 'SELECT comments.*
-                FROM comments, parents_comments
-                WHERE comments.id
-                IN (SELECT comment_id
-                    FROM posts_comments
-                    WHERE post_id = ?)
-                AND comments.id
-                NOT IN (SELECT comment_id
-                    FROM parents_comments
-                    WHERE comment_id
-                    IN (SELECT comment_id
-                        FROM posts_comments
-                        WHERE post_id = ?))
-                ORDER BY comments.id DESC';
-
-        return $this->_db->query($sql, [$postId, $postId], get_class($this))->results();
 	}
 
 	public function idDescFor($params)
