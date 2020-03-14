@@ -36,22 +36,26 @@ class CommentsController extends Controller
         ini_set('display_errors', 'Off');
 
         $postId = $this->postsModel->findById(Input::get('post'), ['values' => 'id'], false)->id;
-        $parentId = Input::get('parent') ?? 0;
+        $parentId = Input::get('parent');
 
-        if ($parentId != 0)
+        if ($parentId != 0 && !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
         {
-            $parentId = $this->commentsModel->findById($parentId, ['values' => 'id'], false);
+            return false;
         }
         $amount = (int) Input::get('comments');
+        $offset = ($amount >= self::COMMENTS_PER_LOAD) ? $amount - self::COMMENTS_PER_LOAD : 0;
 
         $params = [
             'limit' => self::COMMENTS_PER_LOAD,
 		    'order' => 'id DESC',
-            'offset' => $amount - self::COMMENTS_PER_LOAD
+            'offset' => $offset
         ];
         $this->view->comments = $this->commentsModel->findForParent($postId, $parentId, $params, false);
 
-        echo preg_replace('/^[^\[]*(?!\[)/m', '', json_encode($this->view->comments));
+        $result = preg_replace('/^[^\[]*(?!\[)/m', '', json_encode($this->view->comments));
+        //$result = json_encode(json_decode($result), JSON_PRETTY_PRINT);
+
+        echo $result;
     }
 
     public function delete_action($id)

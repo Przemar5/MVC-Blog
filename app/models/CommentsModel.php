@@ -3,7 +3,7 @@
 
 class CommentsModel extends Model
 {
-    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids, $subcomments;
+    public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids, $subcomments, $subcomments_count;
     protected $formValues = ['id', 'username', 'email', 'message', 'post_id'];
 
     private $validationRules = [
@@ -34,16 +34,52 @@ class CommentsModel extends Model
 //			'exists' => ['args' => ['users', 'id'], 'msg' => ''],
 //		]
     ];
+
+	public function getAdditionalInfo()
+    {
+        if (empty($this->id))
+        {
+            return false;
+        }
+
+        if (empty($this->dependencies['select']))
+        {
+            return false;
+        }
+
+        foreach ($this->dependencies['select'] as $table => $properties)
+        {
+            die('ok');
+            /*
+            if (empty($this->{$property}))
+            {
+                d('TABLE');
+                d($this->_table . $object);
+                d('Property');
+                d($property . 'ForComment');
+                $this->{$property} = ModelMediator::make($this->_table . $object,
+                                                         $property . 'ForComment',
+                                                         [$this->id,
+                                                          ['values' => $this->dependencies['select'][$object]]]);
+
+            }
+            */
+        }
+    }
 	
 	private $dependencies = [
-		'binding' => [
+		/*'binding' => [
 			'children_ids' => 'parents_comments',
 			'parent_id' => 'parents_comments',
 			'post_id' => 'posts_comments'
-		],
+		],*/
 		'select' => [
-			'parents_comments' => ['parent_id', 'comment_id'],
-			'posts_comments' => ['post_id']
+			'parents_comments' => [
+			    'parent_id' => 'parent_id'
+			],
+			'posts_comments' => [
+			    'post_id' => 'post_id'
+			]
 		],
 		'insert' => [
 			'posts_comments' => [
@@ -176,31 +212,6 @@ class CommentsModel extends Model
 			return $this->insert($data, true);
 		}
 	}
-
-	public function getAdditionalInfo()
-    {
-        if (empty($this->id))
-        {
-            return false;
-        }
-
-        if (empty($this->dependencies['binding']))
-        {
-            return false;
-        }
-
-        foreach ($this->dependencies['binding'] as $property => $object)
-        {
-            if (empty($this->{$property}))
-            {
-                $this->{$property} = ModelMediator::make($this->_table . $object,
-                                                         $property . 'ForPost',
-                                                         [$this->id,
-                                                          ['values' => $this->dependencies['select'][$object]]]);
-
-            }
-        }
-    }
 	
 	public function actOnDependencies($mode)
 	{
@@ -320,7 +331,7 @@ class CommentsModel extends Model
         return $this->_db->query($sql, $params, $class)->results();
     }
 
-	public function findForParent($postId, $parentId = null, $params = [], $class = true)
+	public function findForParent($postId, $parentId = null, $params = [], $class = true, $additionalInfo = true)
 	{
         if (empty($postId) || !$post = ModelMediator::make('posts', 'findById', [$postId, ['values' => 'id'], false]))
         {
@@ -333,8 +344,8 @@ class CommentsModel extends Model
         $limit = (!empty($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
         $offset = (!empty($params['offset'])) ? ' OFFSET ' . $params['offset'] : '';
         $postIdString = 'post_id = ?';
-        $parentIdString = (!empty($parentId)) ? 'parent_id = ?' . $parentId : '(parent_id IS NULL OR parent_id = 0)';
-        $params = [$postId];
+        $parentIdString = (!empty($parentId)) ? 'parent_id = ' . $parentId : '(parent_id IS NULL OR parent_id = 0)';
+        $bind = [$postId];
         $class = ($class) ? get_class($this) : false;
 
         if (!empty($parentId))
@@ -347,8 +358,30 @@ class CommentsModel extends Model
                 '(SELECT comment_id FROM posts_comments WHERE ' . $postIdString . ')) ' .
                 $order . $limit . $offset;
 
-        return $this->_db->query($sql, $params, $class)->results();
+        $results = $this->_db->query($sql, $bind, $class)->results();
+
+        if ($additionalInfo && !empty($results) && count($results))
+        {
+            foreach ($results as $result)
+            {
+                $result->post_id = $postId;
+                $result->parent_id = $parentId;
+                $result->subcomments_count = ModelMediator::make('parentsComments', 'countChildrenFor', [$result->id]);
+            }
+        }
+
+        return $results;
 	}
+
+	public function findFor($params = [])
+    {
+        foreach ($params['data'] as $table => $column)
+        {
+            $path[$table] = GraphHelper::findPath(ModelMediator::$refs, $table, $this->_table, key($column));
+        }
+
+        return $this->complexFind2($path, $params);
+    }
 
 	public function lastFromFor($limit, $offset, $params = [])
 	{

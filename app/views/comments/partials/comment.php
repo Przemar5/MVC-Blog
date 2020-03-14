@@ -1,4 +1,4 @@
-<div class="card my-4">
+<div class="card my-4 comment">
     <div class="card-body">
         <h3>
             <?= $comment->username; ?>

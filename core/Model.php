@@ -262,6 +262,70 @@ class Model
 		}
 	}
 
+	public function complexFind2($paths = [], $params = [], $class = true, $dependencies = true)
+	{
+		$sql = '';
+		$mainValues = (isset($params['values']) && is_array($params['values'])) ? implode(', ', $params['values']) : $params['values'];
+		$mainValues = (!empty($mainValues)) ? $mainValues : '*';
+		$bracketsCounter = 0;
+
+		if (!empty($paths) && count($paths))
+		{
+			foreach ($paths as $pathName => $path)
+			{
+				$path = array_reverse($path);
+
+				if (!empty($paths) && count($paths))
+				{
+					foreach ($path as $table => $values)
+					{
+						$valuesList = (!empty($mainValues)) ? $mainValues : array_pop($values);
+						$whereValue = (is_array($values)) ? array_pop($values) : $values;
+
+						$sql .= 'SELECT ' . $valuesList . ' FROM ' . $table . ' WHERE ';
+
+						if ($bracketsCounter < count($path) - 1)
+						{
+							$sql .= $whereValue . ' IN (';
+						}
+						else
+						{
+							$params['bind'] = reset($params['data'][$pathName]);
+							$sql .= Helper::repeatString($whereValue . ' = ?', count($params['bind']), ' OR ');
+						}
+
+						$bracketsCounter++;
+					}
+				}
+			}
+
+			while ($bracketsCounter > 1)
+			{
+				$sql .= ')';
+				$bracketsCounter--;
+			}
+
+			$sign = (preg_match('/^.* DESC$/i', $params['order'])) ? '<=' : '>=';
+			$from = (isset($params['from'])) ? ' AND id ' . $sign . ' ' . $params['from'] : '';
+			$order = (isset($params['order'])) ? ' ORDER BY ' . $params['order'] : '';
+			$limit = (isset($params['limit'])) ? ' LIMIT ' . $params['limit'] : '';
+
+			$sql .= $from . $order . $limit;
+		}
+
+		$class = ($class) ? get_class($this) : false;
+        dd($sql);
+
+        $result = $this->_db->query($sql, $params['bind'], $class)->results();
+
+		if ($dependencies)
+		{
+			ArrayHelper::callMethod($results, 'getAdditionalInfo');
+		}
+
+		return $result;
+	}
+
     public function select($params = [])
     {
         return $this->_db->all($this->_table, $params);

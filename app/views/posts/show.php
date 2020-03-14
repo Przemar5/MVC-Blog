@@ -1,5 +1,6 @@
 <?php $this->setSiteTitle($this->post->label); ?>
 <?php $this->setScript('comments', 'comment.class'); ?>
+<?php $this->setScript('comments', 'view.class'); ?>
 <?php $this->setScript('load_comments'); ?>
 <?php $this->start('head'); ?>
 

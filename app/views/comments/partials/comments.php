@@ -3,7 +3,7 @@
 
     <?php if (!empty($this->comments) && count($this->comments)): ?>
         <?php foreach ($this->comments as $comment): ?>
-            <div class="card my-4">
+            <div class="card my-4 comment">
                 <div class="card-body">
                     <h3>
                         <?= $comment->username; ?>
@@ -29,10 +29,6 @@
 
                     <div class="subcomments">
                         <?php if (!empty($comment->subcomments) && count($comment->subcomments)): ?>
-                            <button id="loadMore" name="load" value="<?= $comment->id; ?>" class="btn btn-block btn-primary btn-load">
-                                Load More
-                            </button>
-
                             <?php foreach ($comment->subcomments as $comment): ?>
 
                                 <?php $this->partial('comments', 'comments'); ?>

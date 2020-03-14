@@ -350,7 +350,7 @@ class PostsModel extends Model
 		$params['values'] = 'id';
 		$params['order'] = 'id DESC';
 		
-		return ArrayHelper::flattenSingles($this->complexFind($path, $params, false));
+		return ArrayHelper::flattenSingles($this->a($path, $params, false));
 	}
 	
 	public function lastFromByCategorySlug($limit, $offset, $slug, $params = [])
