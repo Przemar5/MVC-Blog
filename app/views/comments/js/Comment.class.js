@@ -13,8 +13,11 @@ function Comment(data)
     this.subcomments_count = data.subcomments_count;
     this.view = null;
     this.btnLoadSubcomments = null;
+    this.commentBody = null;
+    this.btnShowMore = null;
     this.subcommentsArea = null;
 
+    var COMMENTS_PER_LOAD;
     var ROOT = 'http://localhost/files/projects/NewBlog/comments/';
 
     this.prepareLink = function()
@@ -28,8 +31,8 @@ function Comment(data)
         this.prepareLink();
 
         comment = `<div class="card my-4 comment">
-                    <div class="card-body">
-                        <h3>
+                    <div class="card-body comment__inner">
+                        <h3 class="comment__header">
                             ${this.username}
                             <small class="h6 d-inline italic ml-2">
                                 <em>
@@ -46,11 +49,11 @@ function Comment(data)
     
                         <h2>${this.id}</h2>
     
-                        <p>
+                        <p class="comment__body">
                             ${this.message}
                         </p>
                         
-                        <div class="subcomments"></div>
+                        <div class="comments"></div>
                     </div>
                 </div>`;
 
@@ -59,10 +62,10 @@ function Comment(data)
 
     this.prepareView = function()
     {
-        this.view = View.element({tag: 'div', class: 'card my-4 comment'});
-        commentInner = View.element({tag: 'div', class: 'card-body'});
+        this.view = View.element({tag: 'div', class: 'card my-4 comment comment-' + this.id});
+        commentInner = View.element({tag: 'div', class: 'card-body comment__inner'});
         this.view.append(commentInner);
-        commentHeader = View.element({tag: 'h3', text: '' + this.username});
+        commentHeader = View.element({tag: 'h3', text: '' + this.username, class: 'comment__header'});
         commentInner.append(commentHeader);
         commentHeaderSmall = View.element({tag: 'small', class: 'h6 d-inline italic ml-2'});
         commentHeader.append(commentHeaderSmall);
@@ -72,36 +75,50 @@ function Comment(data)
         commentHeader.append(commentHeaderBtns);
         commentBtnEdit = View.element({tag: 'a', href: ROOT + 'edit/' + this.id, class: 'btn btn-sm btn-primary', text: 'Edit'});
         commentHeaderBtns.append(commentBtnEdit);
-        commentBtnDelete = View.element({tag: 'a', href: ROOT + 'delete/' + this.id, class: 'btn btn-sm btn-danger', text: 'Delete'});
+        commentBtnDelete = View.element({tag: 'a', href: ROOT + 'delete/' + this.id, class: 'btn btn-sm btn-danger ml-2', text: 'Delete'});
         commentHeaderBtns.append(commentBtnDelete);
 
         // Tmp
         commentId = View.element({tag: 'h2', text: this.id});
         commentInner.append(commentId);
 
-        commentBody = View.element({tag: 'p', text: this.message})
-        commentInner.append(commentBody);
-        this.subcommentsArea = View.element({tag: 'div', class: 'subcomments'});
+        this.commentBody = View.element({tag: 'p', text: this.message, class: 'comment__body mb-4'});
+        commentInner.append(this.commentBody);
+
+        if (this.message.length > 10)
+            this.truncateComment();
+
+        commentInner.append(this.showMore());
+
+        this.subcommentsArea = View.element({tag: 'div', class: 'comments'});
         commentInner.append(this.subcommentsArea);
 
         if (this.subcomments_count > 0)
         {
-            this.btnLoadSubcomments = View.element({tag: 'a',
-                                            href: ROOT + 'load?post=' + this.post_id + '&parent=' + this.id + '&comments=' + 5,
-                                            class: 'btn btn-block btn-default', text: 'Load More'});
-            $(this.btnLoadSubcomments).click(function(e) {
-                this.subcommentsArea.append(loadMore(e.target.getAttribute('href')));
-
-                e.preventDefault();
-                return false;
-            });
+            this.btnLoadSubcomments = new BtnLoad(this.post_id, this.id);
             commentInner.append(this.btnLoadSubcomments);
         }
 
-        body = $('body');
-        body.append(this.view);
-
         return this.view;
+    }
+
+    this.showMore = function()
+    {
+        commentBody = this.commentBody;
+        this.btnShowMore = View.element({tag: 'button', text: 'Show More', class: 'btn btn-muted btn-expand'});
+        $(this.btnShowMore).click(function(e) {
+            btn = $(e.target);
+
+            if (btn.hasClass('comment-convoluted'))
+            {
+                btn.toggleClass('comment-convoluted');
+                btn.text = 'Test';
+            }
+
+            alert('ok');
+        });
+
+        return this.btnShowMore;
     }
 
     this.loadMore = function(url)
@@ -119,52 +136,22 @@ function Comment(data)
             });
     }
 
-    console.log(this.prepareView());
-
-    this.prepareLoadBtn = function()
+    this.truncateComment = function()
     {
-        btnLoad = document.createElement('a');
-        $(btnLoad).addClass('btn btn-block btn-default btn-load');
-        $(btnLoad).text('Load More');
-        $(btnLoad).attr('href', ROOT + 'load?post=' + this.post_id + '&parent=' + this.id + '&comments=' + this.subcomments_count);
-        $(btnLoad).click(function(e) {
-            // makeQuery();
-
-            e.preventDefault();
-            return false;
-        });
-        console.log(btnLoad);
+        $(this.commentBody).addClass('comment-convoluted');
     }
 
-    this.prepareLoadBtn();
+    this.toggleShowMore = function()
+    {
+
+    }
 
     this.display = function()
     {
         comments = $('#comments');
-        comment = document.createElement('div');
-        comment.innerText = this.prepareDisplay();
-        comments.append(comment);
+        this.prepareView();
+        comments.append(this.view);
     }
 
-    display();
+    this.display();
 }
-
-a = function()
-{
-    alert('WORKS')
-}
-
-// data = '[{"id":165,"username":"przemar5","email":"przemar5@o2.pl","message":" hjnnhnbiu hjhbjbk","user_id":1,"created_at":"2020-03-10 20:45:02","updated_at":null,"deleted":0},{"id":164,"username":"przemar5","email":"przemar5@o2.pl","message":" hjnnhnbiu hjhbjbk","user_id":1,"created_at":"2020-03-10 20:44:49","updated_at":null,"deleted":0},{"id":163,"username":"przemar5","email":"przemar5@o2.pl","message":" hjnnhnbiu hjhbjbk","user_id":1,"created_at":"2020-03-10 20:44:01","updated_at":null,"deleted":0},{"id":162,"username":"przemar5","email":"przemar5@o2.pl","message":" hjnnhnbiu hjhbjbk","user_id":1,"created_at":"2020-03-10 20:43:53","updated_at":null,"deleted":0},{"id":161,"username":"przemar5","email":"przemar5@o2.pl","message":" hjnnhnbiu hjhbjbk","user_id":1,"created_at":"2020-03-10 20:42:39","updated_at":null,"deleted":0}]';
-// for (commentData in commentsData)
-// {
-//     comment = new Comment(commentData);
-// }
-//
-// commentsData = JSON.parse(data);
-//
-// console.log(comments);
-//
-// alert('ok');
-//
-// comment = new Comment();
-// comment.display();

@@ -126,8 +126,7 @@ class PostsController extends Controller
 
         if (!$this->_noscript)
         {
-            $this->view->comments = $this->commentsModel->findForParent($this->view->post->id, null, $params, true);
-            $this->view->loadMore = $this->_prepareLoadMore();
+            //$this->view->comments = $this->commentsModel->findForParent($this->view->post->id, null, $params, true);
         }
         else
         {

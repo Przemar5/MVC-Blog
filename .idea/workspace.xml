@@ -2,18 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../app/views/comments/js/view.class.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../app/views/comments/js/BtnLoad.class.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../app/views/posts/js/init_comments.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/controllers/CommentsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/CommentsController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/models/CommentsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/models/CommentsModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/models/ParentsCommentsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/models/ParentsCommentsModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/models/PostsModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/models/PostsModel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/comment.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/comment.class.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/comments/partials/comment.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/partials/comment.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/controllers/PostsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/PostsController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/comment.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/Comment.class.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/view.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/View.class.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/partials/comments.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/js/load_comments.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../app/views/posts/show.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/show.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../core/Model.php" beforeDir="false" afterPath="$PROJECT_DIR$/../core/Model.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../css/custom.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/custom.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,8 +27,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
         <option value="HTML File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -95,7 +93,8 @@
       <workItem from="1584008738309" duration="10857000" />
       <workItem from="1584024451978" duration="5447000" />
       <workItem from="1584092468574" duration="31304000" />
-      <workItem from="1584189347060" duration="27132000" />
+      <workItem from="1584189347060" duration="27732000" />
+      <workItem from="1584266171240" duration="33044000" />
     </task>
     <servers />
   </component>
@@ -103,10 +102,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1584189679769">
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog" timestamp="1584266182265">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
-    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1584189679769" />
+    <state x="555" y="252" key="com.intellij.ide.util.TipDialog/0.0.1600.860@0.0.1600.860" timestamp="1584266182265" />
     <state x="836" y="4" width="627" height="852" key="find.popup" timestamp="1584197319465">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
@@ -115,9 +114,9 @@
       <screen x="0" y="0" width="1600" height="860" />
     </state>
     <state x="535" y="190" key="run.anything.popup/0.0.1600.860@0.0.1600.860" timestamp="1584213770056" />
-    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup" timestamp="1584213873509">
+    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup" timestamp="1584295539476">
       <screen x="0" y="0" width="1600" height="860" />
     </state>
-    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup/0.0.1600.860@0.0.1600.860" timestamp="1584213873509" />
+    <state x="542" y="181" width="672" height="678" key="search.everywhere.popup/0.0.1600.860@0.0.1600.860" timestamp="1584295539476" />
   </component>
 </project>

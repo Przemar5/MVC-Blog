@@ -1,6 +1,8 @@
 <?php $this->setSiteTitle($this->post->label); ?>
-<?php $this->setScript('comments', 'comment.class'); ?>
-<?php $this->setScript('comments', 'view.class'); ?>
+<?php $this->setScript('comments', 'View.class'); ?>
+<?php $this->setScript('comments', 'BtnLoad.class'); ?>
+<?php $this->setScript('comments', 'Comment.class'); ?>
+<?php $this->setScript('init_comments'); ?>
 <?php $this->setScript('load_comments'); ?>
 <?php $this->start('head'); ?>
 
@@ -8,6 +10,8 @@
 
 <?php $this->start('body'); ?>
 <div class="container my-5">
+    <?= HTML::hidden(['id' => 'post_id', 'value' => $this->post->id]); ?>
+
     <h2 class="mb-4">
         <?= $this->post->title; ?>
 
@@ -49,7 +53,11 @@
 
     <h2 class="mb-5">Comments</h2>
 
-    <?php $this->partial('comments', 'comments'); ?>
+    <div class="comments">
+        <noscript>
+            <?php $this->partial('comments', 'comments'); ?>
+        </noscript>
+    </div>
 </div>
 
 <?php $this->end(); ?>
