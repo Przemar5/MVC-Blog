@@ -4,7 +4,7 @@
 class CommentsModel extends Model
 {
     public $id, $username, $email, $message, $user_id, $created_at, $updated_at, $deleted, $post_id, $parent_id, $children_ids, $subcomments, $subcomments_count;
-    protected $formValues = ['id', 'username', 'email', 'message', 'post_id'];
+    protected $formValues = ['id', 'username', 'email', 'message', 'post_id', 'parent_id'];
 
     private $validationRules = [
         'username' => [
@@ -24,10 +24,15 @@ class CommentsModel extends Model
             'min' => ['args' => [6], 'msg' => 'Email address must be equal or longer than 6 characters.'],
         ],
 		'post_id' => [
-			'required' => ['msg' => 'req'],
-			'numeric' => ['msg' => 'num'],
-			'exists' => ['args' => ['posts', 'id'], 'msg' => 'not'],
+			'required' => ['msg' => ''],
+			'numeric' => ['msg' => ''],
+			'exists' => ['args' => ['posts', 'id'], 'msg' => ''],
 		],
+		'parent_id' => [
+		    'required' => ['msg' => ''],
+			'numeric' => ['msg' => ''],
+			'exists' => ['args' => ['comments', 'id'], 'msg' => ''],
+		]
 //		'user_id' => [
 //			'required' => ['msg' => ''],
 //			'numeric' => ['msg' => ''],
@@ -49,7 +54,6 @@ class CommentsModel extends Model
 
         foreach ($this->dependencies['select'] as $table => $properties)
         {
-            die('ok');
             /*
             if (empty($this->{$property}))
             {
@@ -133,7 +137,16 @@ class CommentsModel extends Model
 			$this->email = $user->email;
 			$this->user_id = $user->id;
 		}
-		$this->parent_id = $this->parent_id ?? 0;
+
+		if (empty($this->post_id) || !ModelMediator::make('posts', 'findById', [$this->post_id]))
+		{
+		    return false;
+		}
+
+		if ($this->parent_id != 0 && !$this->findById($this->parent_id))
+		{
+		    return false;
+		}
 
         $this->validation->check([
             'username' => $this->username,
@@ -199,8 +212,6 @@ class CommentsModel extends Model
 		}
 		else 
 		{
-			$this->parent_id = 0;
-
 			$data = [
 				'username' => $this->username,
 				'email' => $this->email,
@@ -245,8 +256,6 @@ class CommentsModel extends Model
 
 	public function getCommentsTree($postId, $params = [], $class = true)
 	{
-	    //dd(func_get_args());
-
 	    $rootComments = $this->findForParent($postId, 0, $params, false, $additionalActions = []);
 
         foreach ($rootComments as $comment)

@@ -21,6 +21,10 @@
             <?= $comment->message; ?>
         </p>
 
+        <a href="<?= URL; ?>/comments/create?post=<?= $this->post->id; ?>&parent=<?= $comment->id; ?>" class="btn btn-sm btn-primary">
+            Add Comment
+        </a>
+
         <?php if (!empty($comment->subcomments) && count($comment->subcomments)): ?>
             <?php foreach ($comment->subcomments as $comment): ?>
                 <?php include(__DIR__ . DS . 'comment.php'); ?>

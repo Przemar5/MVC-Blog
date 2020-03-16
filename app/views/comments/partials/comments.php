@@ -1,4 +1,3 @@
-
 <?php if (!empty($this->comments) && count($this->comments)): ?>
     <?php foreach ($this->comments as $comment): ?>
         <div class="card my-4 comment">
@@ -23,6 +22,10 @@
                 <p>
                     <?= $comment->message; ?>
                 </p>
+
+                <a href="<?= URL; ?>/comments/create?post=<?= $this->post->id; ?>&parent=<?= $comment->id; ?>" class="btn btn-sm btn-primary">
+                    Add Comment
+                </a>
 
                 <div class="comments">
                     <?php if (!empty($comment->subcomments) && count($comment->subcomments)): ?>

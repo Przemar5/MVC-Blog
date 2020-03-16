@@ -10,11 +10,12 @@
 
 .comment-convoluted {
 	position: relative;
+	overflow: hidden;
+	max-height: 10rem;
 }
 
 .comment__body {
 	display: block;
-	margin-bottom: .5rem;
 }
 
 .comment-convoluted::after {
@@ -25,12 +26,13 @@
 	right: 0;
 	bottom: 0;
 	width: 100%;
+	max-height: 100%;
 	background: rgb(255,255,255);
 	background: linear-gradient(
-					180deg,
-					rgba(55,255,255,0) 0%,
-					rgba(255,255,255,1) 90%,
-					rgba(255,255,255,1) 100%);
+			180deg,
+			rgba(55,255,255,0) 0%,
+			rgba(55,255,255,0) 50%,
+			rgba(255,255,255,1) 100%);
 }
 
 .btn-expand {
@@ -41,4 +43,15 @@
 
 .btn-load {
 	/*margin-top: 3rem;*/
+}
+
+.btn-text {
+	border: none;
+	background-color: transparent;
+	color: var(--primary);
+}
+
+.btn-text:focus,
+.btn-text:hover {
+	text-decoration: underline;
 }

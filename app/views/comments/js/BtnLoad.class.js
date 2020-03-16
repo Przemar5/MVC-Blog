@@ -11,9 +11,8 @@ function BtnLoad(post_id, parent_id) {
     {
         btn = View.element({tag: 'a',
             href: ROOT + 'load?post=' + this.post_id + '&parent=' + this.parent_id + '&comments=' + 5,
-            class: 'btn btn-block btn-default btn-load', text: 'Load More'});
+            class: 'btn btn-block btn-default btn-load', text: 'Load More Comments'});
         $(btn).addClass('btn btn-primary btn-load');
-        $(btn).text('Load More');
         $(btn).attr('href', ROOT + 'load?post=' + this.post_id + '&parent=' + this.parent_id + '&comments=' + COMMENTS_PER_LOAD);
         $(btn).click(function(e) {
             subcommentsArea = $(e.target).closest('.comment').find('.comments').first();

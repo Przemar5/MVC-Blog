@@ -13,6 +13,29 @@ class CommentsController extends Controller
 		$this->loadModels(['posts', 'comments', 'users']);
 	}
 
+	public function create_action()
+	{
+	    if (Input::isPost())
+        {
+            $this->_verifyCreated();
+            $this->view->errors = $this->commentsModel->popErrors() ?? [];
+            $this->view->comment = $this->commentsModel->populate($_POST);
+        }
+
+	    $postId = $this->postsModel->findById(Input::get('post'), ['values' => 'id'], false)->id;
+        if (!$postId)
+            return false;
+
+        $parentId = Input::get('parent');
+        if ($parentId != 0 && !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
+            return false;
+
+        $this->view->comment->post_id = $postId;
+        $this->view->comment->parent_id = $parentId;
+        $this->view->submitButtonValue = 'Create';
+	    $this->view->render('comments/create');
+	}
+
 	public function edit_action($id)
 	{
 	    if (Input::isPost())
@@ -36,12 +59,13 @@ class CommentsController extends Controller
         ini_set('display_errors', 'Off');
 
         $postId = $this->postsModel->findById(Input::get('post'), ['values' => 'id'], false)->id;
-        $parentId = Input::get('parent');
-
-        if ($parentId != 0 && !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
-        {
+        if (!$postId)
             return false;
-        }
+
+        $parentId = Input::get('parent');
+        if ($parentId != 0 && !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
+            return false;
+
         $amount = (int) Input::get('comments');
         $offset = ($amount >= self::COMMENTS_PER_LOAD) ? $amount - self::COMMENTS_PER_LOAD : 0;
 
@@ -74,6 +98,36 @@ class CommentsController extends Controller
         Router::redirect('posts');
     }
 
+    public function form_action()
+    {
+        ini_set('display_errors', 'Off');
+
+        $postId = $this->postsModel->findById(Input::get('post'), ['values' => 'id'], false)->id;
+        if ($postId)
+            $this->view->comment->post_id = $postId;
+
+        $parentId = Input::get('parent');
+        if ($parentId == 0 || !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
+            $this->view->comment->parent_id = $parentId;
+
+        $path = ROOT . DS. 'app' . DS . 'views' . DS . 'comments' . DS . 'partials' . DS . 'form.php';
+
+        require($path);
+    }
+
+    private function _verifyCreated()
+    {
+        $comment = new $this->commentsModel;
+        $comment->populate($_POST);
+
+        if ($comment->check() && $comment->save())
+        {
+            $slug = $this->postsModel->findById($comment->post_id, ['values' => 'slug'])->slug;
+            Session::set('last_action', 'Your comment had been added successfully.');
+            Router::redirect('posts/show/' . $slug);
+        }
+    }
+
     private function _verifyUpdated($id)
     {
         if (!is_numeric($id) || !$comment = $this->commentsModel->findById($id))
@@ -84,7 +138,7 @@ class CommentsController extends Controller
 
         if ($comment->check(true) && $comment->save())
         {
-            Session::set('last_action', 'You have updated post successfully.');
+            Session::set('last_action', 'You have updated comment successfully.');
             Router::redirect('posts');
         }
     }

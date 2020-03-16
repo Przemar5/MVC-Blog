@@ -12,9 +12,12 @@ function Comment(data)
     this.parent_id = data.parent_id;
     this.subcomments_count = data.subcomments_count;
     this.view = null;
+    this.btnAddComment = null;
     this.btnLoadSubcomments = null;
     this.commentBody = null;
     this.btnShowMore = null;
+    this.addCommentDiv = null;
+    this.addCommentForm = null;
     this.subcommentsArea = null;
 
     var COMMENTS_PER_LOAD;
@@ -85,11 +88,15 @@ function Comment(data)
         this.commentBody = View.element({tag: 'p', text: this.message, class: 'comment__body mb-4'});
         commentInner.append(this.commentBody);
 
-        if (this.message.length > 10)
+        if (this.message.length > 500)
+        {
             this.truncateComment();
+            commentInner.append(this.showMore());
+        }
 
-        commentInner.append(this.showMore());
-
+        this.addCommentDiv = View.element({tag: 'div', class: 'comment__add-div'});
+        commentInner.append(this.addCommentDiv);
+        commentInner.append(this.createAddCommentBtn());
         this.subcommentsArea = View.element({tag: 'div', class: 'comments'});
         commentInner.append(this.subcommentsArea);
 
@@ -105,20 +112,71 @@ function Comment(data)
     this.showMore = function()
     {
         commentBody = this.commentBody;
-        this.btnShowMore = View.element({tag: 'button', text: 'Show More', class: 'btn btn-muted btn-expand'});
+        this.btnShowMore = View.element({tag: 'button', text: 'Expand', class: 'btn-text btn-expand mb-2'});
         $(this.btnShowMore).click(function(e) {
             btn = $(e.target);
 
-            if (btn.hasClass('comment-convoluted'))
-            {
-                btn.toggleClass('comment-convoluted');
-                btn.text = 'Test';
-            }
+            if (btn.hasClass('btn-expanded'))
+                btn.text('Expand');
+            else
+                btn.text('Hide');
 
-            alert('ok');
+            btn.closest('.comment').find('.comment__body').first().toggleClass('comment-convoluted');
+            btn.toggleClass('btn-expanded');
         });
 
         return this.btnShowMore;
+    }
+
+    this.createAddCommentBtn = function()
+    {
+        this.btnAddComment = View.element({tag: 'a', href: ROOT + 'create?post=' + this.post_id + '&parent=' + this.id,
+            class: 'btn btn-sm btn-primary mb-3', text: 'Add Comment'});
+        $(this.btnAddComment).on('click', function(e) {
+            loadForm = new Promise(function(resolve, reject) {
+                addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
+                addCommentDiv.addClass('mb-4');
+
+                addCommentDiv.load(ROOT + 'form');
+                $(e.target).addClass('d-none');
+
+                setTimeout(function() {
+                    addCommentDiv.find('input[type="submit"]').val('Add Comment');
+                    addCommentDiv.find('input[name="post_id"]').val('Add Comment');
+                    addCommentDiv.find('input[name="parent_id"]').val('Add Comment');
+                    addCommentDiv.find('input[type="submit"]').val('Add Comment');
+                }, 300);
+            });
+
+            loadForm.then(function() {
+                addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
+                // addCommentDiv.find('submit').first().val('Add Comment');
+                console.log(addCommentDiv[0].innerHTML)
+            });
+
+
+            e.preventDefault();
+            return false;
+        });
+
+        return this.btnAddComment;
+    }
+
+    prepareForm = function()
+    {
+
+    }
+
+    toggleCommentForm = function()
+    {
+        //addCommentDiv = $(e.target).closest('.comment');
+
+        //console.log(addCommentDiv);
+        // if (addCommentForm == null)
+        // {
+        //     console.log(addCommentDiv[0]);
+        //     $(addCommentDiv).load(ROOT + 'partials/form.php');
+        // }
     }
 
     this.loadMore = function(url)
@@ -139,11 +197,6 @@ function Comment(data)
     this.truncateComment = function()
     {
         $(this.commentBody).addClass('comment-convoluted');
-    }
-
-    this.toggleShowMore = function()
-    {
-
     }
 
     this.display = function()
