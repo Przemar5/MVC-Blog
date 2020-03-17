@@ -1,0 +1,28 @@
+{
+  'username': {
+    'required': {'msg': 'Username is required.'},
+    'min': {'args': [6], 'msg': 'Username must be equal or longer than 6 characters.'},
+    'max': {'args': [150], 'msg': 'Username cannot be longer than 150 characters.'},
+    'regex': {'args': ['{0-9a-zA-Z \@\+\/\?\!\$\_\-}+'], 'msg': 'Username contains illegal characters.'},
+  },
+  'email': {
+    'required': {'msg': 'Email address is required.'},
+    'min': {'args': [6], 'msg': 'Email address must be equal or longer than 6 characters.'},
+    'max': {'args': [150], 'msg': 'Email address cannot be longer than 150 characters.'},
+    'regex': {'args': ['{0-9a-zA-Z \@\+\/\?\!\$\_\-\.\,}+'], 'msg': 'Email address contains illegal characters.'},
+  },
+  'message': {
+    'required': {'msg': 'Comment body is required.'},
+    'min': {'args': [6], 'msg': 'Email address must be equal or longer than 6 characters.'},
+  },
+  'post_id': {
+    'required': {'msg': ''},
+    'numeric': {'msg': ''},
+    'exists': {'args': ['posts', 'id'], 'msg': ''},
+  },
+  'parent_id': {
+    'required': {'msg': ''},
+    'numeric': {'msg': ''},
+    'exists': {'args': ['comments', 'id'], 'msg': ''},
+  }
+}

@@ -1,4 +1,5 @@
-function BtnLoad(post_id, parent_id) {
+function BtnLoad(post_id, parent_id)
+{
     var COMMENTS_PER_LOAD = 5;
     var ROOT = 'http://localhost/files/projects/NewBlog/comments/';
     var count;

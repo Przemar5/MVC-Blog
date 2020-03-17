@@ -1,6 +1,8 @@
 <?php $this->setSiteTitle($this->post->label); ?>
 <?php $this->setScript('comments', 'View.class'); ?>
 <?php $this->setScript('comments', 'BtnLoad.class'); ?>
+<?php $this->setScript('comments', 'Validator.class'); ?>
+<?php $this->setScript('comments', 'Form.class'); ?>
 <?php $this->setScript('comments', 'Comment.class'); ?>
 <?php $this->setScript('init_comments'); ?>
 <?php $this->setScript('load_comments'); ?>

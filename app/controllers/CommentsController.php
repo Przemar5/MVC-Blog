@@ -110,7 +110,8 @@ class CommentsController extends Controller
         if ($parentId == 0 || !$this->commentsModel->findById($parentId, ['values' => 'id'], false)->id)
             $this->view->comment->parent_id = $parentId;
 
-        $path = ROOT . DS. 'app' . DS . 'views' . DS . 'comments' . DS . 'partials' . DS . 'form.php';
+        $this->comment->token = Token::generate();
+        $path = ROOT . DS. 'app' . DS . 'views' . DS . 'comments' . DS . 'partials' . DS . 'mini_form.php';
 
         require($path);
     }

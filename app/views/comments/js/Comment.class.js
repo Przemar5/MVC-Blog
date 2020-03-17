@@ -19,6 +19,7 @@ function Comment(data)
     this.addCommentDiv = null;
     this.addCommentForm = null;
     this.subcommentsArea = null;
+    this.form = null;
 
     var COMMENTS_PER_LOAD;
     var ROOT = 'http://localhost/files/projects/NewBlog/comments/';
@@ -27,40 +28,6 @@ function Comment(data)
     {
         var url = window.location.href;
         var pattern = /()*[]/;
-    }
-
-    this.prepareDisplay = function()
-    {
-        this.prepareLink();
-
-        comment = `<div class="card my-4 comment">
-                    <div class="card-body comment__inner">
-                        <h3 class="comment__header">
-                            ${this.username}
-                            <small class="h6 d-inline italic ml-2">
-                                <em>
-                                    ${this.email}
-                                    created at ${this.created_at}
-                                </em>
-                            </small>
-                        
-                            <div class="pull-right">
-                                <a href="${ROOT}edit/${this.id}" class="btn btn-sm btn-primary">Edit</a>
-                                <a href="${ROOT}delete/${this.id}" class="btn btn-sm btn-danger">Delete</a>
-                            </div>
-                        </h3>
-    
-                        <h2>${this.id}</h2>
-    
-                        <p class="comment__body">
-                            ${this.message}
-                        </p>
-                        
-                        <div class="comments"></div>
-                    </div>
-                </div>`;
-
-        return comment;
     }
 
     this.prepareView = function()
@@ -132,28 +99,64 @@ function Comment(data)
     {
         this.btnAddComment = View.element({tag: 'a', href: ROOT + 'create?post=' + this.post_id + '&parent=' + this.id,
             class: 'btn btn-sm btn-primary mb-3', text: 'Add Comment'});
-        $(this.btnAddComment).on('click', function(e) {
-            loadForm = new Promise(function(resolve, reject) {
-                addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
-                addCommentDiv.addClass('mb-4');
 
-                addCommentDiv.load(ROOT + 'form');
-                $(e.target).addClass('d-none');
+        $(this.btnAddComment).click({
+            post_id: this.post_id,
+            parent_id: this.id,
+            submitValue: 'Add Comment',
+            form: this.form
+        }, function(e) {
+            formObj = new Form();
+            form = formObj.createForm(e.data.post_id, e.data.parent_id, null, e.data.submitValue, null);
 
-                setTimeout(function() {
-                    addCommentDiv.find('input[type="submit"]').val('Add Comment');
-                    addCommentDiv.find('input[name="post_id"]').val('Add Comment');
-                    addCommentDiv.find('input[name="parent_id"]').val('Add Comment');
-                    addCommentDiv.find('input[type="submit"]').val('Add Comment');
-                }, 300);
-            });
+            $(e.target).closest('.comment').find('.comment__add-div').append(form);
 
-            loadForm.then(function() {
-                addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
-                // addCommentDiv.find('submit').first().val('Add Comment');
-                console.log(addCommentDiv[0].innerHTML)
-            });
+            $(e.target).hide();
 
+            // addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
+            //
+            // addCommentDiv.addClass('mb-4');
+            // addCommentDiv.load(ROOT + 'form');
+            // $(e.target).hide();
+            //
+            // setTimeout(function() {
+            //     addCommentDiv.find('input[name="post_id"]').val(e.data.post_id);
+            //     addCommentDiv.find('input[name="parent_id"]').val(e.data.parent_id);
+            //     addCommentDiv.find('input[type="submit"]').val(e.data.submitValue);
+            //     addCommentForm = addCommentDiv.find('form').first();
+            //
+            //     addCommentForm.submit({
+            //         form: addCommentForm
+            //     }, function(e) {
+            //         formData = new Form();
+            //         formData.populate($(this).serializeArray());
+            //
+            //         if (formData.check())
+            //         {
+            //             console.log('Passed!');
+            //         }
+            //         else
+            //         {
+            //             for (i in formData.errors)
+            //             {
+            //                 addCommentDiv.find('input[name="' + i + '"]').first().addClass('d-none') ||
+            //                 addCommentDiv.find('textarea[name="' + i + '"]').first().addClass('d-none');
+            //             }
+            //         }
+            //
+            //         e.preventDefault();
+            //         return false;
+            //     });
+
+                // addCommentForm.find('input[type="submit"]').click(function(e) {
+                //
+                //
+                //     e.preventDefault();
+                //     return false;
+                // });
+
+
+            // }, 300);
 
             e.preventDefault();
             return false;
