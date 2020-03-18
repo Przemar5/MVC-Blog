@@ -70,7 +70,7 @@ function Comment(data)
         if (this.subcomments_count > 0)
         {
             this.btnLoadSubcomments = new BtnLoad(this.post_id, this.id);
-            commentInner.append(this.btnLoadSubcomments);
+            commentInner.append(this.btnLoadSubcomments.view);
         }
 
         return this.view;
@@ -94,6 +94,16 @@ function Comment(data)
 
         return this.btnShowMore;
     }
+	
+	// Temp because of no possibility to increment load btn offset
+	var incrementLoadOffset = function(url, num = 1)
+	{
+        re = /(?!offset\=)\d+$/;
+        oldNumber = (parseInt(re.exec(url)) != 'NaN') ? parseInt(re.exec(url)) : 0;
+        newNumber = oldNumber + num;
+        
+		return url.replace(re, newNumber);
+	}
 
     this.createAddCommentBtn = function()
     {
@@ -104,59 +114,48 @@ function Comment(data)
             post_id: this.post_id,
             parent_id: this.id,
             submitValue: 'Add Comment',
-            form: this.form
+            form: this.form,
+			subcommentsArea: this.subcommentsArea,
+			btnLoad: this.btnLoadSubcomments
+			
         }, function(e) {
             formObj = new Form();
-            form = formObj.createForm(e.data.post_id, e.data.parent_id, null, e.data.submitValue, null);
+            form = formObj.createForm(e.data.post_id, e.data.parent_id, null, e.data.submitValue, null, ROOT + 'create');
 
-            $(e.target).closest('.comment').find('.comment__add-div').append(form);
+			btnLoad = e.data.btnLoad;
+			
+            $(e.target).closest('.comment').find('.comment__add-div').first().append(form);
+            $(e.target).closest('.comment').find('form').first().submit({
+				formObject: formObj,
+				btnLoad: btnLoad
+				
+			}, function(e) {
+				subcommentsArea = $(e.target).closest('.comment').find('.comments').first();
+				
+				if (e.data.formObject.addSubmitEvent())
+				{
+					url = ROOT + 'load?post=' + e.data.formObject.post_id + '&parent=' + e.data.formObject.parent_id + '&comments=1&offset=0';
+
+					$.get(url, function(data) {
+						data = JSON.parse(data);
+						comment = new Comment(data[0]);
+						
+						if (subcommentsArea.children('.comment').length > 0)
+							subcommentsArea.prepend(comment.prepareView());
+						else
+							subcommentsArea.append(comment.prepareView());
+
+						btnLoad = $(e.target).closest('.comment').find('.btn-load').last();
+						url = btnLoad.attr('href');
+						btnLoad.attr('href', incrementLoadOffset(url, 1));
+					});
+				}
+				
+				e.preventDefault();
+				return false;
+			});
 
             $(e.target).hide();
-
-            // addCommentDiv = $(e.target).closest('.comment').find('.comment__add-div').first();
-            //
-            // addCommentDiv.addClass('mb-4');
-            // addCommentDiv.load(ROOT + 'form');
-            // $(e.target).hide();
-            //
-            // setTimeout(function() {
-            //     addCommentDiv.find('input[name="post_id"]').val(e.data.post_id);
-            //     addCommentDiv.find('input[name="parent_id"]').val(e.data.parent_id);
-            //     addCommentDiv.find('input[type="submit"]').val(e.data.submitValue);
-            //     addCommentForm = addCommentDiv.find('form').first();
-            //
-            //     addCommentForm.submit({
-            //         form: addCommentForm
-            //     }, function(e) {
-            //         formData = new Form();
-            //         formData.populate($(this).serializeArray());
-            //
-            //         if (formData.check())
-            //         {
-            //             console.log('Passed!');
-            //         }
-            //         else
-            //         {
-            //             for (i in formData.errors)
-            //             {
-            //                 addCommentDiv.find('input[name="' + i + '"]').first().addClass('d-none') ||
-            //                 addCommentDiv.find('textarea[name="' + i + '"]').first().addClass('d-none');
-            //             }
-            //         }
-            //
-            //         e.preventDefault();
-            //         return false;
-            //     });
-
-                // addCommentForm.find('input[type="submit"]').click(function(e) {
-                //
-                //
-                //     e.preventDefault();
-                //     return false;
-                // });
-
-
-            // }, 300);
 
             e.preventDefault();
             return false;

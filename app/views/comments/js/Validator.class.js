@@ -5,6 +5,7 @@ function Validator()
     this.rules = new Array();
     this.errors = new Array();
     this.currentField = null;
+	this.currentError = null;
     this.passed = null;
 
     this.check = function(data, rules)
@@ -46,6 +47,7 @@ function Validator()
 
                 if (!this[rule](value, arg1, arg2))
                 {
+					this.currentError = rules[rule].msg;
                     this.errors[this.currentField] = rules[rule].msg;
 
                     return false;
@@ -62,7 +64,7 @@ function Validator()
     }
 
     this.min = function(value, min)
-    {
+    {	
         if ((typeof value == 'string' || value instanceof String) && (min = parseInt(min)) != 'NaN')
         {
             return value.length >= min;
@@ -101,13 +103,18 @@ function Validator()
         if ((typeof value == 'string' || value instanceof String) &&
             (typeof regex == 'string' || regex instanceof String))
         {
-            regex = new RegExp('^' + regex + '$');
+            regex = new RegExp('^' + this.addSlashes(regex) + '$');
 
             return regex.test(value);
         }
 
         return false;
     }
+	
+	this.addSlashes = function(string)
+	{
+		return string;
+	}
 
     alert('Validator class works');
 }

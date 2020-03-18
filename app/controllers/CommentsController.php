@@ -67,10 +67,12 @@ class CommentsController extends Controller
             return false;
 
         $amount = (int) Input::get('comments');
-        $offset = ($amount >= self::COMMENTS_PER_LOAD) ? $amount - self::COMMENTS_PER_LOAD : 0;
+		
+        if (!$offset = (int) Input::get('offset')) 
+			$offset = ($amount >= self::COMMENTS_PER_LOAD) ? $amount - self::COMMENTS_PER_LOAD : 0;
 
         $params = [
-            'limit' => self::COMMENTS_PER_LOAD,
+            'limit' => $amount ?? self::COMMENTS_PER_LOAD,
 		    'order' => 'id DESC',
             'offset' => $offset
         ];

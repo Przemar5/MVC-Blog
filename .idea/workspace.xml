@@ -2,17 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbf01735-590c-4a60-b18c-1d1cb2cf5a18" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../app/views/comments/js/Form.class.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../app/views/comments/js/Validator.class.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../app/views/comments/partials/mini_form.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../core/Token.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../json/validation/comment_validation.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/controllers/CommentsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/controllers/CommentsController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/BtnLoad.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/BtnLoad.class.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/comments/js/Comment.class.js" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/comments/js/Comment.class.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/views/posts/show.php" beforeDir="false" afterPath="$PROJECT_DIR$/../app/views/posts/show.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../index.php" beforeDir="false" afterPath="$PROJECT_DIR$/../index.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +87,7 @@
       <workItem from="1584189347060" duration="27732000" />
       <workItem from="1584266171240" duration="34240000" />
       <workItem from="1584356200306" duration="25008000" />
-      <workItem from="1584438465520" duration="31380000" />
+      <workItem from="1584438465520" duration="32628000" />
     </task>
     <servers />
   </component>

@@ -21,7 +21,7 @@ class CommentsModel extends Model
 		],
         'message' => [
             'required' => ['msg' => 'Comment body is required.'],
-            'min' => ['args' => [6], 'msg' => 'Email address must be equal or longer than 6 characters.'],
+            'min' => ['args' => [6], 'msg' => 'Comment must be equal or longer than 6 characters.'],
         ],
 		'post_id' => [
 			'required' => ['msg' => ''],
