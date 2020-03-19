@@ -3,6 +3,9 @@
 
 class CategoryController extends Controller
 {
+	private const POSTS_PER_PAGE = 10;
+	
+	
 	public function __construct()
 	{
 		parent::__construct();
@@ -20,7 +23,8 @@ class CategoryController extends Controller
 	{
 		if ($this->view->category = $this->categoriesModel->findBySlug($slug))
 		{
-			$this->view->posts = $this->postsCategoriesModel->postsForCategoryId($this->view->category->id);
+			$this->view->posts = $this->postsCategoriesModel->postsByCategoryId($this->view->category->id);
+			$this->_preparePagination(ceil(count($this->view->posts) / self::POSTS_PER_PAGE));
 			$this->view->render('category/show');
 		}
 		else 
@@ -80,5 +84,19 @@ class CategoryController extends Controller
             Session::set('last_action', 'You have updated category successfully.');
             Router::redirect('category');
         }
+    }
+
+    private function _preparePagination($tabs)
+    {
+		if (Input::isGet() && !empty($_GET['page']))
+		{
+			list($urlStart, $urlEnd) = URL::splitUrl('page');
+
+			return HTML::pagination($tabs, (int) $this->_currentPage, $urlStart, $urlEnd);
+		}
+		else
+		{
+			return HTML::pagination($tabs, (int) $this->_currentPage, URL::actualUrl());
+		}
     }
 }

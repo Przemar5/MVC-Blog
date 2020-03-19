@@ -10,4 +10,15 @@ class PostsCommentsModel extends Model
         parent::__construct('posts_comments');
         $this->_softDelete = true;
     }
+	
+	public function postIdForCommentId($commentId)
+	{
+		$params = [
+			'values' => 'post_id',
+			'conditions' => 'comment_id = ?',
+			'bind' => [$commentId]
+		];
+		
+		return ArrayHelper::flattenSingles($this->findFirst($params, false));
+	}
 }

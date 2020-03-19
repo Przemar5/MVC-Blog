@@ -38,16 +38,16 @@ class CommentsController extends Controller
 
 	public function edit_action($id)
 	{
+		if (!is_numeric($id) || !$this->view->comment = $this->commentsModel->findById($id))
+        {
+            Router::goBack();
+        }
+		
 	    if (Input::isPost())
 	    {
 	        $this->_verifyUpdated($id);
             $this->view->errors = $this->commentsModel->popErrors() ?? [];
             $this->view->comment = $this->commentsModel->populate($_POST);
-	    }
-
-	    if (!$this->view->comment = $this->commentsModel->findById($id))
-	    {
-	        Router::redirect('posts');
 	    }
 
         $this->view->submitButtonValue = 'Edit';
@@ -88,7 +88,7 @@ class CommentsController extends Controller
     {
         if (!is_numeric($id) || !$post = $this->commentsModel->findById($id))
         {
-            Router::redirect('posts');
+            Router::goBack();
         }
 
         if (Session::exists(USER_SESSION_NAME) && Session::get(USER_SESSION_NAME) == $post->user_id)
@@ -97,7 +97,7 @@ class CommentsController extends Controller
             Session::set('last_action', 'Comment had been removed.');
         }
 
-        Router::redirect('posts');
+        Router::goBack();
     }
 
     public function form_action()
@@ -127,22 +127,19 @@ class CommentsController extends Controller
         {
             $slug = $this->postsModel->findById($comment->post_id, ['values' => 'slug'])->slug;
             Session::set('last_action', 'Your comment had been added successfully.');
-            Router::redirect('posts/show/' . $slug);
+            Router::goBack();
         }
     }
 
     private function _verifyUpdated($id)
     {
-        if (!is_numeric($id) || !$comment = $this->commentsModel->findById($id))
-        {
-            Router::redirect('posts');
-        }
-        $comment->populate($_POST);
+        $this->view->comment->populate($_POST);
 
-        if ($comment->check(true) && $comment->save())
+        if ($this->view->comment->check(true) && $this->view->comment->save())
         {
+			$postSlug = ModelMediator::make('posts', 'findSlugById', [$this->view->comment->post_id]);
             Session::set('last_action', 'You have updated comment successfully.');
-            Router::redirect('posts');
+            Router::goBack();
         }
     }
 

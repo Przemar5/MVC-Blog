@@ -1,10 +1,12 @@
 <?php $this->setSiteTitle($this->post->label); ?>
+<?php $this->setScript('comments', 'init_modal_form'); ?>
 <?php $this->setScript('comments', 'View.class'); ?>
 <?php $this->setScript('comments', 'BtnLoad.class'); ?>
 <?php $this->setScript('comments', 'Validator.class'); ?>
 <?php $this->setScript('comments', 'Form.class'); ?>
 <?php $this->setScript('comments', 'Comment.class'); ?>
 <?php $this->setScript('init_comments'); ?>
+<?php $this->setScript('init_comment_form'); ?>
 <?php $this->setScript('load_comments'); ?>
 <?php $this->start('head'); ?>
 
@@ -49,9 +51,15 @@
 -->
     <?= HTML::errors($this->errors ?? ''); ?>
 
-    <?php $this->partial('comments', 'form'); ?>
-
+  	<div id="commentFormArea">
+		<noscript>
+			<?php $this->partial('comments', 'form'); ?>
+		</noscript>
+  	</div>
+   
     <hr class="my-5">
+    
+    <div id="modalArea"></div>
 
     <h2 class="mb-5">Comments</h2>
 

@@ -115,6 +115,4 @@ function Validator()
 	{
 		return string;
 	}
-
-    alert('Validator class works');
 }

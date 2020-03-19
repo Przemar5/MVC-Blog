@@ -52,23 +52,8 @@ class CommentsModel extends Model
             return false;
         }
 
-        foreach ($this->dependencies['select'] as $table => $properties)
-        {
-            /*
-            if (empty($this->{$property}))
-            {
-                d('TABLE');
-                d($this->_table . $object);
-                d('Property');
-                d($property . 'ForComment');
-                $this->{$property} = ModelMediator::make($this->_table . $object,
-                                                         $property . 'ForComment',
-                                                         [$this->id,
-                                                          ['values' => $this->dependencies['select'][$object]]]);
-
-            }
-            */
-        }
+		$this->post_id = ModelMediator::make('postsComments', 'postIdForCommentId', [$this->id]);
+		$this->parent_id = ModelMediator::make('parentsComments', 'parentIdForCommentId', [$this->id]);
     }
 	
 	private $dependencies = [

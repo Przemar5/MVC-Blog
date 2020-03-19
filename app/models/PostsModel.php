@@ -277,6 +277,20 @@ class PostsModel extends Model
 		
 		return $this->tags;
 	}
+	
+	public function findSlugById($id)
+	{
+		if (!is_numeric($id))
+		{
+			return false;
+		}
+		
+		$params = [
+			'values' => 'slug'
+		];
+		
+		return ArrayHelper::flattenSingles($this->findById($id, $params, false, false));
+	}
 
     public function findBySlug($slug, $values = '', $class = true)
     {

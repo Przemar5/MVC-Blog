@@ -50,7 +50,7 @@ function Form(data)
         this.validation = new Validator();
     }
 
-    this.createForm = function(post_id, parent_id, id, submitValue, token, url)
+    this.createForm = function(post_id, parent_id, id, submitValue, token, url, formClasses = 'mb-3')
     {
         this.post_id = post_id;
         this.parent_id = parent_id;
@@ -58,7 +58,7 @@ function Form(data)
         this.submitValue = submitValue;
         this.token = token;
 		this.url = url;
-		this.view = View.element({tag: 'form', method: 'post', action: url, class: 'mb-3'});
+		this.view = View.element({tag: 'form', method: 'post', action: url, class: formClasses});
 		$(this.view).submit()
 		
         row = View.element({tag: 'div', class: 'row mt-0 mb-5'});
@@ -109,6 +109,7 @@ function Form(data)
 			validation: this.validation,
 			rules: validationRules[name],
 			valid: this.valid
+			
 		}, function(e) {
 			if (e.data.validation.checkForField($(e.target).val().trim(), e.data.rules)) 
 			{
@@ -139,17 +140,16 @@ function Form(data)
 		return this.view.submit;
 	}
 	
-	this.addSubmitEvent = function(url)
+	this.addSubmitEvent = function(url = this.url)
 	{
 		if (!this.checkIfPassed())
 		{
-			alert('Cannot submit');
 			return false;
 		}
 		
 		$.ajax({
 			type: 'POST',
-			url: this.url,
+			url: url,
 			data: $(this.view).serializeArray()
 		});
 		
@@ -224,8 +224,6 @@ function Form(data)
 
         return false;
     }
-
-    alert('Form class works');
 
     this.constructor(data);
 }

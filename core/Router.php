@@ -26,6 +26,22 @@ class Router
             exit;
         }
     }
+	
+	public static function goBack()
+	{
+		if (!headers_sent())
+		{
+			header('Location: ' . $_SERVER['HTTP_REFERER']);
+			exit;
+		}
+		else
+		{
+			echo '<script type="text/javascript">';
+            echo 'history.go(-1)';
+            echo '</script>';
+			exit;
+		}
+	}
 
     public static function checkNoscript()
     {

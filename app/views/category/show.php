@@ -3,7 +3,6 @@
 <?php $this->end(); ?>
 
 <?php $this->start('body'); ?>
-<h1>Category</h1>
 <h1>Category: 
     <?= $this->category->name; ?>
 </h1>
@@ -18,24 +17,7 @@
 </div>
 
 <div class="container">
-	<div>
-		<strong>ID:</strong>
-		<?= $this->category->id; ?>
-	</div>
-	<div>
-		<strong>Name:</strong>
-		<?= $this->category->name; ?>
-	</div>
-	<div>
-		<strong>Slug:</strong>
-		<?= $this->category->slug; ?>
-	</div>
-	<div>
-		<strong>Posts:</strong>
-		
-	</div>
+	<?php $this->partial('posts', 'posts'); ?>
 </div>
-
-<?php $this->partial('posts', 'posts'); ?>
 
 <?php $this->end(); ?>

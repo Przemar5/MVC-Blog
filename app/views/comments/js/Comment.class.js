@@ -35,24 +35,29 @@ function Comment(data)
         this.view = View.element({tag: 'div', class: 'card my-4 comment comment-' + this.id});
         commentInner = View.element({tag: 'div', class: 'card-body comment__inner'});
         this.view.append(commentInner);
-        commentHeader = View.element({tag: 'h3', text: '' + this.username, class: 'comment__header'});
+        commentHeader = View.element({tag: 'h3', class: 'comment__header'});
+		commentUsername = View.element({tag: 'span', text: '' + this.username, class: 'comment__username'});
+		commentHeader.append(commentUsername);
         commentInner.append(commentHeader);
         commentHeaderSmall = View.element({tag: 'small', class: 'h6 d-inline italic ml-2'});
         commentHeader.append(commentHeaderSmall);
-        commentHeaderEm = View.element({tag: 'em', text: this.email + ' created at ' + this.created_at})
+		commentEmail = View.element({tag: 'span', text: this.email, class: 'comment__email'});
+		commentCreatedAt = View.element({tag: 'span', text: ' created at ' + this.created_at, class: 'comment__created_at'});
+        commentHeaderEm = View.element({tag: 'em'});
+		commentHeaderEm.append(commentEmail);
+		commentHeaderEm.append(commentCreatedAt);
         commentHeaderSmall.append(commentHeaderEm);
+		
         commentHeaderBtns = View.element({tag: 'div', class: 'pull-right'});
         commentHeader.append(commentHeaderBtns);
-        commentBtnEdit = View.element({tag: 'a', href: ROOT + 'edit/' + this.id, class: 'btn btn-sm btn-primary', text: 'Edit'});
-        commentHeaderBtns.append(commentBtnEdit);
-        commentBtnDelete = View.element({tag: 'a', href: ROOT + 'delete/' + this.id, class: 'btn btn-sm btn-danger ml-2', text: 'Delete'});
-        commentHeaderBtns.append(commentBtnDelete);
+		commentHeaderBtns.append(this.createEditCommentBtn());
+        commentHeaderBtns.append(this.createDeleteCommentBtn());
 
         // Tmp
         commentId = View.element({tag: 'h2', text: this.id});
         commentInner.append(commentId);
 
-        this.commentBody = View.element({tag: 'p', text: this.message, class: 'comment__body mb-4'});
+        this.commentBody = View.element({tag: 'p', text: this.message, class: 'comment__message mb-4'});
         commentInner.append(this.commentBody);
 
         if (this.message.length > 500)
@@ -75,7 +80,7 @@ function Comment(data)
 
         return this.view;
     }
-
+	
     this.showMore = function()
     {
         commentBody = this.commentBody;
@@ -88,7 +93,7 @@ function Comment(data)
             else
                 btn.text('Hide');
 
-            btn.closest('.comment').find('.comment__body').first().toggleClass('comment-convoluted');
+            btn.closest('.comment').find('.comment__message').first().toggleClass('comment-convoluted');
             btn.toggleClass('btn-expanded');
         });
 
@@ -103,6 +108,86 @@ function Comment(data)
         newNumber = oldNumber + num;
         
 		return url.replace(re, newNumber);
+	}
+	
+	this.refreshDisplay = function(arr, form)
+	{
+		for (i in arr)
+		{
+			$(this.view).find('.comment__' + arr[i]).first().text($(form).find('[name="' + arr[i] + '"]').val());
+		}
+	}
+	
+	this.createEditCommentBtn = function()
+	{
+		commentBtnEdit = View.element({tag: 'button', type: 'button', 'data-toggle': 'modal', 'data-target': '#modalForm', class: 'btn btn-sm btn-primary', text: 'Edit'});
+        $(commentBtnEdit).click({
+			username: this.username,
+			email: this.email,
+			message: this.message,
+			id: this.id,
+            post_id: this.post_id,
+            parent_id: this.parent_id,
+            submitValue: 'Edit Comment',
+			modalCommentForm: modalCommentForm,
+			self: this
+			
+		}, function(e) {
+			$(e.data.modalCommentForm.view).attr('action', ROOT + 'edit/' + e.data.id);
+			e.data.modalCommentForm.url = ROOT + 'edit/' + e.data.id;
+			
+			updateValue = function(fieldName, value)
+			{
+				elem = $(e.data.modalCommentForm.view).find('[name="' + fieldName + '"]');
+				
+				(elem.prop('tagName') == 'INPUT') ? elem.attr('value', value) : elem.text(value);
+			}
+			
+			updateMultiple = function(arr)
+			{
+				for (i in arr)
+				{
+					updateValue(arr[i], e.data[arr[i]]);
+				}
+			}
+
+			updateMultiple(['username', 'email', 'message', 'id', 'post_id', 'parent_id']);
+			submit = $(e.data.modalCommentForm.view).find('[type="submit"]').attr('value', e.data.submitValue);
+			
+			$(e.data.modalCommentForm.view).submit({
+				form: e.data.modalCommentForm,
+				url: ROOT + 'edit/' + e.data.id,
+				self: e.data.self
+				
+			}, function(e) {
+				
+				if (e.data.form.addSubmitEvent(e.data.url))
+				{
+					e.data.self.refreshDisplay(['username', 'email', 'message'], e.data.form.view);
+					$(e.target).closest('.modal').modal('hide');
+				}
+				
+				e.preventDefault();
+				return false;
+			});
+		});
+		
+		return commentBtnEdit;
+	}
+
+	this.createDeleteCommentBtn = function() 
+	{
+        commentBtnDelete = View.element({tag: 'button', class: 'btn btn-sm btn-danger ml-2', text: 'Delete'});
+		$(commentBtnDelete).click({
+			id: this.id
+		}, function(e) {
+			if (window.confirm('Are You sure You want to delete this comment?'))
+			{
+				$.post(ROOT + 'delete/' + e.data.id);
+			}
+		});
+		
+		return commentBtnDelete;
 	}
 
     this.createAddCommentBtn = function()
@@ -184,7 +269,7 @@ function Comment(data)
     this.loadMore = function(url)
     {
         $.get(url, function () {
-                alert("success");
+                //
             })
             .done(function (data) {
                 var comments = JSON.parse(data);

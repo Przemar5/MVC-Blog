@@ -40,7 +40,9 @@
                     <?= $post->label ?>
                 </td>
                 <td>
-                    <?= $post->category->name ?>
+                   	<a href="<?= URL; ?>category/show/<?= $post->category->slug; ?>">
+                   	 	<?= $post->category->name ?>
+					</a>
                 </td>
                 <td>
 					<?= $post->tagsString ?>

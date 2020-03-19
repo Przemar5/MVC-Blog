@@ -49,8 +49,6 @@ class PostsCategoriesModel extends Model
 		return $this->count(['conditions' => 'category_id = ?', 'bind' => [$categoryId]]);
 	}
 	
-	
-	
 	public function postIdsByCategoryId($categoryId)
 	{
 		$data = [
@@ -66,7 +64,7 @@ class PostsCategoriesModel extends Model
 	
 	public function postsByCategoryId($categoryId)
 	{
-		$post_ids = $this->postIdsByCategory($categoryId);
+		$post_ids = $this->postIdsByCategoryId($categoryId);
 	
 		$conditions = '';
 		

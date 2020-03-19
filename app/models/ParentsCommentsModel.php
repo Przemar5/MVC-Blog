@@ -17,4 +17,15 @@ class ParentsCommentsModel extends Model
 
         return $this->count($params);
     }
+	
+	public function parentIdForCommentId($commentId)
+	{
+		$params = [
+			'values' => 'parent_id',
+			'conditions' => 'comment_id = ?',
+			'bind' => [$commentId]
+		];
+		
+		return ArrayHelper::flattenSingles($this->findFirst($params, false));
+	}
 }
